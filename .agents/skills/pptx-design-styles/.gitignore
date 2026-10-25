@@ -1,0 +1,8 @@
+.DS_Store
+**/.DS_Store
+assets/images/*.png
+!assets/images/full_preview.png
+!assets/images/style_glass.png
+!assets/images/style_brutal.png
+!assets/images/style_cyber.png
+!assets/images/style_riso.png

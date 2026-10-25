@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+project_root=$(git rev-parse --show-toplevel)
+node_bin=$(git config --get security.nodePath || true)
+if [ -z "$node_bin" ]; then
+  node_bin=$(command -v node || true)
+fi
+if [ -z "$node_bin" ]; then
+  echo "Privacy check requires Node.js. Push stopped." >&2
+  exit 1
+fi
+cd "$project_root"
+"$node_bin" program/scripts/check-private-data.cjs --worktree --report .private/security-review/latest.json

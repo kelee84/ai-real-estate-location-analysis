@@ -1,0 +1,33 @@
+{
+  "brand": "AI SHERPA",
+  "email": "aisherpa01@gmail.com",
+  "instagram": "@aisherpa_01",
+  "promoVideoUrl": "https://www.instagram.com/p/Dexcr7WH2qR/",
+  "publicAttribution": {
+    "maker": "AI SHERPA",
+    "source": "사용자의 2026-10-22 요청: 개인 이름 대신 AI SHERPA 제작 표기, 기존 인스타그램 계정과 지정한 프로그램 홍보영상 링크 표시",
+    "promoSource": "사용자가 제공한 URL이며 영상 내용이나 계정 소유권을 별도로 확인한 것으로 표시하지 않음",
+    "appliedAt": "2026-10-22"
+  },
+  "verifiedAt": "2026-10-16",
+  "method": "양쪽 PDF를 직접 렌더링해 표기와 연락처를 시각 확인. 원본은 전화번호를 포함하므로 배포하지 않음.",
+  "sources": [
+    {
+      "file": "ai-sherpa-business-card-front-ohprintme-94x53.pdf",
+      "sha256": "649f28a75ed3f2129a8cb866a77c4ddffe4dbf6782fa5d646d03f1ff30fdb94f"
+    },
+    {
+      "file": "ai-sherpa-business-card-back-ohprintme-94x53.pdf",
+      "sha256": "7ea5693bca7e0cc476688a83767750e82cd7a4f6cf7b71b0cb4c4f2c70c26111"
+    }
+  ],
+  "visualIdentity": {
+    "reference": "AI-SHERPA-홍보영상.mp4",
+    "source": "AI-SHERPA-홍보영상.mp4",
+    "sha256": "c791e09ece50902d2ffc1b20f3a4423357c48001f73b79360af7511a13cb5f29",
+    "logo": "Exact static Logo paths from original showreel src/Design.tsx",
+    "palette": "Original showreel src/Design.tsx and reference/brand.json; company contacts retain visually verified business card spelling",
+    "font": "Manrope (SIL OFL), Korean uses installed Malgun Gothic",
+    "appliedAt": "2026-10-18T07:12:14.825Z"
+  }
+}

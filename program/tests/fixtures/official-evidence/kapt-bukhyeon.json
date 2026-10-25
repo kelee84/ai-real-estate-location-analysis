@@ -1,0 +1,28 @@
+{
+  "resultMap_kapt": {
+    "kaptCode": "A12079501",
+    "kaptName": "북아현두산",
+    "kaptUsedate": "1999-03-03",
+    "codeHall": "복도식",
+    "kaptdPcnt": 175,
+    "kaptdPcntu": 540,
+    "kaptdEcntTotal": 11,
+    "kaptdaTCnt": 956
+  },
+  "resultMap_match": {
+    "kaptCode": "A12079501",
+    "townCode": 469
+  },
+  "resultMap_kapt_addrList": [
+    {
+      "addrGbn": "B",
+      "kaptCode": "A12079501",
+      "addr": "서울특별시 서대문구 북아현동 1009 두산아파트"
+    },
+    {
+      "addrGbn": "R",
+      "kaptCode": "A12079501",
+      "addr": "서울특별시 서대문구 이화여대8길 62"
+    }
+  ]
+}

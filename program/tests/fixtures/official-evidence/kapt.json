@@ -1,0 +1,34 @@
+{
+  "resultMap_kapt": {
+    "kaptCode": "A40673923",
+    "kaptName": "송도더샵그린워크1차",
+    "kaptUsedate": "2014-08-29",
+    "kaptDongCnt": 6,
+    "codeMgr": "위탁관리",
+    "codeStr": "철골콘크리트구조",
+    "codeHall": "계단식",
+    "kaptdPcnt": 5,
+    "kaptdPcntu": 1178,
+    "kaptdEcntTotal": 17,
+    "kaptdCccnt": 318,
+    "kaptdWtimebus": "5분이내",
+    "kaptdWtimesub": "10~15분이내",
+    "kaptdaTCnt": 736
+  },
+  "resultMap_match": {
+    "kaptCode": "A40673923",
+    "townCode": 20297704
+  },
+  "resultMap_kapt_addrList": [
+    {
+      "addrGbn": "B",
+      "kaptCode": "A40673923",
+      "addr": "인천광역시 연수구 송도동 18-6 더샵그린워크1차"
+    },
+    {
+      "addrGbn": "R",
+      "kaptCode": "A40673923",
+      "addr": "인천광역시 연수구 아트센터대로97번길 30"
+    }
+  ]
+}

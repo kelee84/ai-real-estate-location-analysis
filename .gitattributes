@@ -1,0 +1,4 @@
+* text=auto
+# Preserve the exact skill/template bytes recorded in the lock manifests.
+.agents/** -text
+.githooks/* text eol=lf

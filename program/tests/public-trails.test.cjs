@@ -1,0 +1,13 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),pub=require('../src/public-trails.cjs'),{todayKst}=require('../src/core.cjs');
+function catalogue(){return {version:pub.CATALOGUE_VERSION,sourceUrl:pub.CATALOGUE_URL,checkedAt:new Date().toISOString(),sourceDate:null,theme:'100715',declaredCount:2,complete:true,rows:[{theme:'100715',id:'A_008',name:'검증산 자락길',category:'숲이 좋은 길',geometry:{type:'LineString',coordinates:[[126.95,37.56],[126.951,37.56]]}},{theme:'100715',id:'C_003',name:'검증천',category:'한강·하천이 좋은 길',geometry:{type:'MultiLineString',coordinates:[[[126.952,37.56],[126.953,37.56]]]}}]};}
+test('whole public catalogue requires same-day source, complete count, unique IDs and line geometry',()=>{
+ assert.ok(pub.validCatalogue(catalogue()));for(const change of [v=>v.checkedAt=new Date(Date.now()-86400000).toISOString(),v=>v.checkedAt=new Date(Date.now()+86400000).toISOString(),v=>v.sourceUrl='https://example.com',v=>v.complete=false,v=>v.declaredCount=3,v=>v.rows[1].id=v.rows[0].id,v=>v.rows[0].theme='other',v=>v.rows[0].geometry.type='Point',v=>v.rows[0].geometry.coordinates[0]=[37.5,126.9],v=>v.rows[0].geometry.coordinates=[],v=>v.rows[0].geometry.coordinates[0]=['126.95',37.56]]){const v=catalogue();change(v);assert.equal(pub.validCatalogue(v),false,change.toString());}
+});
+test('catalogue reader shares concurrent page load, closes its window and clones same-day cached results',async()=>{
+ let loads=0,destroyed=0,windowOptions;const raw=catalogue();delete raw.version;delete raw.complete;delete raw.sourceUrl;delete raw.checkedAt;
+ class Window{constructor(options){windowOptions=options;this.closed=false;this.webContents={setWindowOpenHandler(){},session:{setPermissionRequestHandler(){}},executeJavaScript:async state=>{assert.match(state,/cot_coord_data/);return structuredClone(raw);}};}async loadURL(url){assert.equal(url,pub.CATALOGUE_URL);loads++;await new Promise(r=>setTimeout(r,10));}isDestroyed(){return this.closed;}destroy(){this.closed=true;destroyed++;}}
+ const reader=pub.createPublicTrailReader({BrowserWindow:Window}),[a,b]=await Promise.all([reader.catalogue(),reader.catalogue()]);assert.equal(loads,1);assert.equal(destroyed,1);assert.ok(pub.validCatalogue(a));assert.equal(a.checkedAt,b.checkedAt);a.rows[0].name='mutation';assert.equal((await reader.catalogue()).rows[0].name,'검증산 자락길');assert.equal(loads,1);assert.equal(windowOptions.show,false);assert.equal(windowOptions.webPreferences.nodeIntegration,false);assert.equal(a.sourceDate,null);
+ const controller=new AbortController();controller.abort();await assert.rejects(reader.catalogue({signal:controller.signal}),/중지/);assert.equal(loads,1);
+});
+module.exports={catalogue};

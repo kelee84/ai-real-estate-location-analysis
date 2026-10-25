@@ -1,0 +1,8 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');const {normalizeInput,aggregate}=require('../src/core.cjs');
+const input=normalizeInput({target:'서울 송파구 잠실동 가상단지',building:'가상단지',area:84,types:['trade'],asOf:'2026-10-15'});
+const tx=(area,x={})=>({id:String(area),date:'2026-05-01',kind:'trade',building:'가상단지',location:'서울 송파구 잠실동',area,areaBasis:'전용면적',price:100000,cancelled:false,...x});
+test('요청 타입이 있으면 그대로 사용하고 대체 타입 섞지 않음',()=>{const r=aggregate([tx(84.1),tx(84.99),tx(83.9)],input);assert.equal(r.areaResolution,null);assert.equal(r.rows.length,2);assert.equal(r.summaries[0].area,84);});
+test('84·59 입력에 가장 가까운 정수 타입 적용, 동률은 작은 타입',()=>{let r=aggregate([tx(82.8),tx(86.9),tx(59.9)],input);assert.equal(r.areaResolution.applied,82);assert.equal(r.summaries[0].area,82);assert.match(r.condition,/요청 84타입 → 적용 82타입/);r=aggregate([tx(58.8),tx(61.1)],{...input,area:59});assert.equal(r.areaResolution.applied,58);});
+test('취소·기간 밖·다른 건물·동·거래종류·누락 금액은 후보 제외',()=>{const r=aggregate([tx(83.9,{cancelled:true}),tx(83.8,{date:'2026-04-14'}),tx(84.2,{building:'다른단지'}),tx(84.3,{location:'서울 송파구 신천동'}),tx(83.1,{kind:'monthly',deposit:1000,monthly:100}),tx(83.2,{price:null}),tx(79.9)],input);assert.equal(r.areaResolution.applied,79);assert.equal(r.rows.length,1);});
+test('소수 정확 면적·자료 없음은 자동 대체하지 않음, 유형별 별도 대체 금지',()=>{assert.equal(aggregate([tx(83.9)],normalizeInput({...input,area:'84.81',areaMode:'exact'})).areaResolution,null);assert.equal(aggregate([],input).areaResolution,null);const r=aggregate([tx(84.9),tx(82.9,{kind:'monthly',deposit:1000,monthly:100})],{...input,types:['trade','monthly']});assert.equal(r.areaResolution,null);assert.equal(r.rows.length,1);assert.equal(r.unavailable[0].kind,'monthly');});

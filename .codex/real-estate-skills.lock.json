@@ -1,0 +1,1422 @@
+{
+  "schemaVersion": 2,
+  "configuredAt": "2026-10-15T14:32:11+09:00",
+  "workspace": ".",
+  "discoveryDirectory": ".agents/skills",
+  "scope": "workspace-local; existing global skills are unchanged",
+  "runtimeBaseline": ".codex/runtime-baseline.json",
+  "skillCount": 16,
+  "skillFileCount": 208,
+  "skillBytes": 4403367,
+  "skills": [
+    {
+      "name": "documents",
+      "path": ".agents/skills/documents",
+      "source": {
+        "repository": "NousResearch/hermes-agent",
+        "commit": "7bda2a3368024f7ae1c70cef16583e7c2c891674",
+        "sourcePath": "skills/productivity/docx",
+        "sourceUrl": "https://github.com/NousResearch/hermes-agent/tree/7bda2a3368024f7ae1c70cef16583e7c2c891674/skills/productivity/docx",
+        "license": "MIT",
+        "upstreamVersion": "1.1.0"
+      },
+      "adaptations": [
+        "Use local skill name documents; retain upstream version, author and platforms in metadata",
+        "Add workspace runtime and final page inspection requirements; retain MIT helpers unchanged"
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "bytes": 1091,
+          "sha256": "e3cbb473240e1d307d61809891b26ae8956e401d39ad2ea5e2c407d69298dbc5"
+        },
+        {
+          "path": "references/revisions-and-comments.md",
+          "bytes": 3997,
+          "sha256": "cd861f6e9ea77767b1a5e2ec3f48dd620b0664811d8f204c59c61571b408e9ba"
+        },
+        {
+          "path": "scripts/docx_comments.py",
+          "bytes": 10640,
+          "sha256": "1ab18ff6d84532f64d0a640c079ad37bee2d0e8ee91db203c438e5a98a1a5871"
+        },
+        {
+          "path": "scripts/docx_common.py",
+          "bytes": 3314,
+          "sha256": "2f25c7b13aa9f5f12d7ac14eabade638bf9b2dc6b8e54739f73fb42b68a27029"
+        },
+        {
+          "path": "scripts/docx_create.py",
+          "bytes": 6387,
+          "sha256": "8391869c97ab804374dddadff4fbebc060120c0b973d06133f84487cc2c442d5"
+        },
+        {
+          "path": "scripts/docx_edit.py",
+          "bytes": 8619,
+          "sha256": "00feef0a58a318406077020a017dd0b2673daaef93e0bda81fa9437b237180ff"
+        },
+        {
+          "path": "scripts/docx_read.py",
+          "bytes": 5405,
+          "sha256": "4760617eea1b17d648f7a46f6718c22ec4a76a359e8f0ee9f6ffe921df9129de"
+        },
+        {
+          "path": "scripts/docx_revisions.py",
+          "bytes": 4550,
+          "sha256": "d0eed5c718ebc8a0d7e9f8ae80fe22b19e922202ba57a936db28092f2031e15b"
+        },
+        {
+          "path": "scripts/docx_template.py",
+          "bytes": 2482,
+          "sha256": "aed1b1db212b72995bd47a28e6c9928a4d02d7596615f1dadf12cd43a4f34219"
+        },
+        {
+          "path": "scripts/docx_validate.py",
+          "bytes": 6153,
+          "sha256": "66c1d307e940803e1505002477ced7ac156524566f16d29913807443a8d8826c"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 11552,
+          "sha256": "c59357ffeab48f5623afadaa829f3a6a56a3f96453817bcbc6734b0e5aef7316"
+        },
+        {
+          "path": "tests/test_docx_skill.py",
+          "bytes": 21306,
+          "sha256": "fdd0735fdbfdadf51afd36c092edf579b4fa24239eec4c4b8b73de8c77f905ca"
+        }
+      ]
+    },
+    {
+      "name": "excel-live-control",
+      "path": ".agents/skills/excel-live-control",
+      "source": {
+        "provider": "OpenAI Codex bundled skill",
+        "bundleVersion": "26.1013.11914",
+        "skill": "excel-live-control",
+        "plugin": "spreadsheets"
+      },
+      "adaptations": [],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 410,
+          "sha256": "e7dd753d45019ad2196cef0e2dd866e50bb14832f0653d019d69b0eb4d1a82ea"
+        },
+        {
+          "path": "domain_guidance/financial_models.md",
+          "bytes": 7282,
+          "sha256": "3169cc0e2453f3c34f63ef639aab22abc5686c6e2639f1d4ad7dc0235e8480ee"
+        },
+        {
+          "path": "domain_guidance/healthcare.md",
+          "bytes": 4736,
+          "sha256": "8edae030b3abb0ef178f5a38691f64d7d9f4a462a70c0656ae8650605363f921"
+        },
+        {
+          "path": "domain_guidance/marketing_advertising.md",
+          "bytes": 3950,
+          "sha256": "b2e087facba8e407fb5d47d55505ea544ca7c7ff5d402fd6a535093df740d086"
+        },
+        {
+          "path": "domain_guidance/scientific_research.md",
+          "bytes": 3725,
+          "sha256": "bad46ddb8561c02b5460cd8dcb9bc9018b8b24df03a6688af7b9a3977b5b298c"
+        },
+        {
+          "path": "features/charts.md",
+          "bytes": 5870,
+          "sha256": "a5bb73e5a3c0f7ec44cf0737d5dc25ae690e420a99d37e23cf8144d8316f56a3"
+        },
+        {
+          "path": "officejs.md",
+          "bytes": 8866,
+          "sha256": "cb3d4292191d6a6adfc5251b88ea5a62aab75bb5c9c863fc1ed546b881045955"
+        },
+        {
+          "path": "references/image-references.md",
+          "bytes": 1072,
+          "sha256": "7fe546860468950ed80f428c79eea269383aa30f421b957546666ee15161e6b8"
+        },
+        {
+          "path": "references/read_only_qna.md",
+          "bytes": 1102,
+          "sha256": "993fa777f0f3003c2a1c3b2021a1f9d78f7a177620603e47cc9cff097cf156fd"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 72454,
+          "sha256": "55335802aeb641f8819f0020d4fa172b069376aaa00ab7934f3426d8a121509a"
+        },
+        {
+          "path": "style_guidelines.md",
+          "bytes": 10165,
+          "sha256": "a0e328147991a4acc3d867d8e10a0a6697373ff2fe43eefd41646c83b29ad630"
+        },
+        {
+          "path": "workflows/create_workflows.md",
+          "bytes": 1575,
+          "sha256": "b24cbf85c4358c2269352bf44002ad5a1e24174983010a836f5ead6e6c0b3958"
+        },
+        {
+          "path": "workflows/edit_workflows.md",
+          "bytes": 2505,
+          "sha256": "d195ef03edbb07036706659bfc899b97afd0aa6121f7d607c1d1e0cd8a47f8e8"
+        }
+      ]
+    },
+    {
+      "name": "geospatial-and-cartographic-visualization",
+      "path": ".agents/skills/geospatial-and-cartographic-visualization",
+      "source": {
+        "repository": "openai/plugins",
+        "commit": "0722921d5542fc593105c27bd52630babd8b8c2a",
+        "sourcePath": "plugins/build-web-data-visualization/skills/geospatial-and-cartographic-visualization",
+        "sourceUrl": "https://github.com/openai/plugins/tree/0722921d5542fc593105c27bd52630babd8b8c2a/plugins/build-web-data-visualization/skills/geospatial-and-cartographic-visualization",
+        "license": "not declared in repository at pinned commit; redistribution rights not assessed"
+      },
+      "adaptations": [
+        "references/shared: vendor 21 upstream shared reference documents",
+        "Rewrite local shared-reference paths; point optional uninstalled sibling skills to commit-pinned GitHub URLs"
+      ],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 187,
+          "sha256": "8aade0bd575fbbba3211cb925fe96d2bc3e34a8a9cc2c74a0ad61eeeae9ddf2e"
+        },
+        {
+          "path": "references/adaptive-basemaps-and-layer-stacks.md",
+          "bytes": 12126,
+          "sha256": "f1e13c22831c7f90645f29594bb65f52bede7e6ce5d12c3b7e2255c938a9cd23"
+        },
+        {
+          "path": "references/choropleths-symbols-and-flows.md",
+          "bytes": 1524,
+          "sha256": "fbcf82e1bd7506dca3e641be03d3cdcbda888e45cd9afdde5d1eb48eca48af61"
+        },
+        {
+          "path": "references/deckgl-d3-geo-stack-selection.md",
+          "bytes": 2217,
+          "sha256": "50d6cc87f4399807ca7c6a5590c223ebdca29778883a42d77f567974755386be"
+        },
+        {
+          "path": "references/map-or-not.md",
+          "bytes": 980,
+          "sha256": "2709f271f91582696fc73e347451821aab67cd22bd4a7ea31d735c4ebc644a00"
+        },
+        {
+          "path": "references/multiscale-symbols-and-zoom-behavior.md",
+          "bytes": 3174,
+          "sha256": "57ceac09d7b7e96e0a3ac2782dca95d0ff2939b82ee19b51ed9219f2881b4363"
+        },
+        {
+          "path": "references/point-overlap-strategies.md",
+          "bytes": 4863,
+          "sha256": "713e3421769975412598c1e80d9c5cf1183556bc6993a221a90c6e9f1d3cae99"
+        },
+        {
+          "path": "references/projections-and-normalization.md",
+          "bytes": 973,
+          "sha256": "5f4e2af9d6af3197c22c6e52cc68746a668d15dd71306c35f2c86b1e20c43019"
+        },
+        {
+          "path": "references/shared/foundations/art-directed-interactive-visual-stories.md",
+          "bytes": 13456,
+          "sha256": "b58a0d1cd75373f86dba98ef9751ddf15bf59483d843f406a2c5af18fd176a98"
+        },
+        {
+          "path": "references/shared/foundations/domain-contextual-surfaces.md",
+          "bytes": 5362,
+          "sha256": "d132246b11d9688de098cf243a0dcdabb61dc43b9637c3de7ce4a53c5f650527"
+        },
+        {
+          "path": "references/shared/foundations/editorial-infographic-system.md",
+          "bytes": 16721,
+          "sha256": "57d481a54081efd8dae68277ec0ab3a6a6318e021fc46ca7a1f1f9a480de1b36"
+        },
+        {
+          "path": "references/shared/foundations/embedded-visualization-self-use.md",
+          "bytes": 10303,
+          "sha256": "4096f84a91be51c9085371296357d49db8100a2eefd146233c72703aa2bfb996"
+        },
+        {
+          "path": "references/shared/foundations/fictional-data-story-simulation.md",
+          "bytes": 6525,
+          "sha256": "e403d2b2e536e72b21410c3ca7c0244aa706c5f2234bcecbbdd2c499ed951119"
+        },
+        {
+          "path": "references/shared/foundations/implementation-design-and-tradeoffs.md",
+          "bytes": 8037,
+          "sha256": "f6e405aead4ecfc90b51202d3d5b1c52e263c6afbbf0c28c8a81210217855544"
+        },
+        {
+          "path": "references/shared/foundations/interaction-models-and-progressive-disclosure.md",
+          "bytes": 4294,
+          "sha256": "6464d7da61adaf23211ff5d2471f4a10bc95106044c36eb7fdcb654a889b3037"
+        },
+        {
+          "path": "references/shared/foundations/layout-hierarchy-and-self-explanatory-ux.md",
+          "bytes": 3947,
+          "sha256": "9888179d6fefb695f1d2401267183395fc445de71ecc6b12646386676abbb0c1"
+        },
+        {
+          "path": "references/shared/foundations/meaning-preserving-visual-design-workflow.md",
+          "bytes": 19279,
+          "sha256": "8158b212cee78b1a99d2d04ed72018d2cacb343a5a9a53978b2c7309ecc81f36"
+        },
+        {
+          "path": "references/shared/foundations/mobile-first-responsive-visualization.md",
+          "bytes": 12652,
+          "sha256": "e05753145073fb154ffb43ee2b965a436fb7349e45729773e8854f6488c97e3f"
+        },
+        {
+          "path": "references/shared/foundations/operational-visualization-workspaces.md",
+          "bytes": 5514,
+          "sha256": "b73fd02fca3289b3d35356a4f63828af0f179440f4706680f899312847d605ed"
+        },
+        {
+          "path": "references/shared/foundations/perception-color-and-encoding.md",
+          "bytes": 4939,
+          "sha256": "5186bec1e361db4a581deb8ffaf0346bbfe2771440f5a85f5f1be2610846d83c"
+        },
+        {
+          "path": "references/shared/foundations/sensitive-geopolitical-and-humanitarian-stories.md",
+          "bytes": 8636,
+          "sha256": "b86fcd0f154cb3329eaf76bbaac0c6698a48f43925f05dfcd6472306fbed3fab"
+        },
+        {
+          "path": "references/shared/foundations/shareable-state-and-persistence.md",
+          "bytes": 6101,
+          "sha256": "aff64899dfd92f02fb2e6ba3fccb398fce83f899c081a152e6d6876a5c96aa50"
+        },
+        {
+          "path": "references/shared/foundations/storytelling-annotation-and-critique.md",
+          "bytes": 2935,
+          "sha256": "3cb721b7f922f219bc6a304daa943bd7ec768837c62b34f1e77e0d0f307d06a0"
+        },
+        {
+          "path": "references/shared/foundations/task-abstraction-and-chart-selection.md",
+          "bytes": 1844,
+          "sha256": "6fa340eff244a06f4370a8d0d628c444fe2cb69bca6b76286560fd7affc475c1"
+        },
+        {
+          "path": "references/shared/foundations/theory-and-principles.md",
+          "bytes": 2884,
+          "sha256": "e1821d5fc0c50b05933504899480cd5ee1b9a4fa1a6a63c96aecddea860e3288"
+        },
+        {
+          "path": "references/shared/source-index/export-and-automation-sources.md",
+          "bytes": 1337,
+          "sha256": "e5e7843359759647c9200db8aa51f8b1ec2267121928cf95499b88e2f74cb061"
+        },
+        {
+          "path": "references/shared/source-index/official-implementation-docs.md",
+          "bytes": 17533,
+          "sha256": "7fc1353db3546f2ae1efbe18213f49fcbd727e1247ceab7fc4bada5a84c2f4fe"
+        },
+        {
+          "path": "references/shared/source-index/practitioner-guides.md",
+          "bytes": 6503,
+          "sha256": "3d1ac43e733ea146fda628528b8972603b67469f2c8de0ab778fcdd8c9db8541"
+        },
+        {
+          "path": "references/shared/source-index/theory-books-and-papers.md",
+          "bytes": 4839,
+          "sha256": "24d489207c16bc87bbfe9e4ec82abb15a22801a1c349009add7c98c670e5601b"
+        },
+        {
+          "path": "references/slippy-map-and-product-stack-selection.md",
+          "bytes": 3641,
+          "sha256": "6fdf17887e78660dba45ed8cb11ee179c0eac2aa7b84a359e93ddf8d25ac52d0"
+        },
+        {
+          "path": "references/source-method-and-coordinate-ledger.md",
+          "bytes": 1829,
+          "sha256": "cc5550c586f744702e035932264ae7aa11ef4216f03e1ebc6a663cac89ba6ee1"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 11338,
+          "sha256": "41b34c2086bee723cc99bcae186a8b97ec4105f1c947d3a5da404656a6e96480"
+        }
+      ]
+    },
+    {
+      "name": "imagegen",
+      "path": ".agents/skills/imagegen",
+      "source": {
+        "provider": "OpenAI Codex system skill",
+        "license": "Apache-2.0"
+      },
+      "adaptations": [
+        "references/cli.md: resolve CLI relative to current workspace root; add modification notice",
+        "scripts/image_gen.py is unchanged"
+      ],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 281,
+          "sha256": "1797be4076717806df54aa9331c07ac8eebe32c69f32132d5858712b05406146"
+        },
+        {
+          "path": "assets/imagegen-small.svg",
+          "bytes": 2894,
+          "sha256": "087c1632a3b8a2ed4d6218952e7ba7ae2221a979f84233667ed2c587998784da"
+        },
+        {
+          "path": "assets/imagegen.png",
+          "bytes": 1711,
+          "sha256": "95952f644064eb9e890f98d8db07216347186526e4c41ad66d3420629eb86e20"
+        },
+        {
+          "path": "LICENSE.txt",
+          "bytes": 10977,
+          "sha256": "44e03f7e263eb3ad256440c1eeab5e49168baff5a78ecef9a5447261cf3a91bc"
+        },
+        {
+          "path": "references/cli.md",
+          "bytes": 10003,
+          "sha256": "22d98d8b69eca26655013f1d3b0884dec32f74f20909ce932899d3f46b6f2aae"
+        },
+        {
+          "path": "references/codex-network.md",
+          "bytes": 1812,
+          "sha256": "cba3b4d24d30f38adf8021b6e9b49ec5261a9e45e7df31047ec451c916c99b0a"
+        },
+        {
+          "path": "references/image-api.md",
+          "bytes": 6162,
+          "sha256": "695909437b792aff171477dba127476a11235c220beb06533cce7c1495a042c8"
+        },
+        {
+          "path": "references/prompting.md",
+          "bytes": 8394,
+          "sha256": "d957a45cb24fe2cf1a85858674fc533f15a5f4621355f559a13a93168999c2dd"
+        },
+        {
+          "path": "references/sample-prompts.md",
+          "bytes": 18039,
+          "sha256": "76cc8a2988efb6e844a99ff9908b2b11cc07467510fc909002abcc0ee3f0701b"
+        },
+        {
+          "path": "scripts/image_gen.py",
+          "bytes": 35697,
+          "sha256": "3666b807de3f0a1d0a4a767b886d612c0b8f71025c500bba6693d1c6995a0873"
+        },
+        {
+          "path": "scripts/remove_chroma_key.py",
+          "bytes": 14354,
+          "sha256": "fa2989807052b857bed08f7fee0caa2502b54c46afc0a6f28cd706c25f636630"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 19516,
+          "sha256": "706d4d96e1d5c9e6023fe3ccabba1bb34b364024d344fd25b8515ec7d28fe3c4"
+        }
+      ]
+    },
+    {
+      "name": "last-ppt-template",
+      "path": ".agents/skills/last-ppt-template",
+      "source": {
+        "provider": "existing user-authored or user-installed local skill",
+        "skill": "last-ppt-template"
+      },
+      "adaptations": [
+        "2026-10-25: Remove creator and last-modified-by metadata from the Git copy; retain the original only in ignored .private/templates. All other archive entries remain byte-identical."
+      ],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 296,
+          "sha256": "d3bb54051cd053a57042d6ea24ef4aa39b42d60e1b1121a7c3b1c3ad9c323be8"
+        },
+        {
+          "path": "assets/TTTM_분석프로그램_설계서_기본템플릿.pptx",
+          "bytes": 218906,
+          "sha256": "d8699b6aff849efc483bc07000db9fdea877dbaaecc0cacecbe339a0e051c264"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 2384,
+          "sha256": "189fe41042e194408e8c4027534ba83a04712cafb0989dc22d47d73b2d7750dd"
+        }
+      ]
+    },
+    {
+      "name": "markitdown-document-reader",
+      "path": ".agents/skills/markitdown-document-reader",
+      "source": {
+        "provider": "existing user-authored or user-installed local skill",
+        "skill": "markitdown-document-reader"
+      },
+      "adaptations": [],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 349,
+          "sha256": "1e72d9d7ce4e17e12b3f249940c5c1c31f37da6adff585572f87dc3a95a3b84d"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 5029,
+          "sha256": "6139082c1a657746bde1de5c49a8182c67740d91dd57e8ce5e44abc8eca24b93"
+        }
+      ]
+    },
+    {
+      "name": "pdf",
+      "path": ".agents/skills/pdf",
+      "source": {
+        "provider": "OpenAI Codex bundled skill",
+        "bundleVersion": "26.1013.11914",
+        "skill": "pdf",
+        "plugin": "pdf"
+      },
+      "adaptations": [],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 302,
+          "sha256": "5819dd168e544e3293d1501174130c56e139eb37c7d176884d8c6de4b9354f56"
+        },
+        {
+          "path": "assets/file-document.png",
+          "bytes": 1550,
+          "sha256": "bbb3c29874cb3bc706eef9ba4436c7ef8ef33462a173c4c3d4deeec774e4da79"
+        },
+        {
+          "path": "container_tools/mark_artifact_operation_started.mjs",
+          "bytes": 735,
+          "sha256": "968d66a7b491c7728f2ab009dcb54ac0025d6f474de6f3734f66b8809f6c18a8"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 7978,
+          "sha256": "5e14b4b8f944dc5e678ee703dfacf583010431d64d5d829902c5b2541f736c89"
+        }
+      ]
+    },
+    {
+      "name": "pptx-design-styles",
+      "path": ".agents/skills/pptx-design-styles",
+      "source": {
+        "provider": "existing user-authored or user-installed local skill",
+        "skill": "pptx-design-styles"
+      },
+      "adaptations": [],
+      "files": [
+        {
+          "path": ".github/workflows/static.yml",
+          "bytes": 1293,
+          "sha256": "02ac0922213428cbe3a89bb96bd4b2eeb48c4cb6a0d2d61ae26c7c12aecaac88"
+        },
+        {
+          "path": ".gitignore",
+          "bytes": 207,
+          "sha256": "03be7409b817a9b5580d9940e3e91ae8ff8708a7d7a1763d43bb8792baa42805"
+        },
+        {
+          "path": "assets/images/full_preview.png",
+          "bytes": 1945939,
+          "sha256": "7b2f5270ec3c49de37985a39c0720c353fcaa1858fb1da578e23a2617636a0e6"
+        },
+        {
+          "path": "assets/images/style_brutal.png",
+          "bytes": 44159,
+          "sha256": "ea5983e397049f7dcba334111411d77e5493343bdb862e63277bf022c73485d5"
+        },
+        {
+          "path": "assets/images/style_cyber.png",
+          "bytes": 107131,
+          "sha256": "ba7d4bd77df98783d86b310acf729eee6500de41b7c3452e3f67a24036d0ea3b"
+        },
+        {
+          "path": "assets/images/style_glass.png",
+          "bytes": 170876,
+          "sha256": "960416c10d2b4d270fe2b1b7e528110357042c61470ecf0010aa5730494a9653"
+        },
+        {
+          "path": "assets/images/style_riso.png",
+          "bytes": 62923,
+          "sha256": "82519550e0235dd01586811f15c65519ba89fb038481341bbdbae5f753951583"
+        },
+        {
+          "path": "preview/modern-pptx-designs-30.html",
+          "bytes": 79240,
+          "sha256": "1f760f3490b3e2c9cd4cd19a9d44265e020a84fcafb2e70efa7bef1aa240f747"
+        },
+        {
+          "path": "README.md",
+          "bytes": 6374,
+          "sha256": "6e17114de2d4dc7ffc06ce666de0bfdafeeccde347b2234ea4e59eca030e7680"
+        },
+        {
+          "path": "README_ko.md",
+          "bytes": 7152,
+          "sha256": "9a468918166930ba3ff5291563b9d2df10ad8e5007fb1621fa4904efa7b4538c"
+        },
+        {
+          "path": "references/styles.md",
+          "bytes": 37150,
+          "sha256": "7fe79125fe1acdc1e1b574f220c43f7e2e47de9b2cd7f4d9f6b751603970ee63"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 5447,
+          "sha256": "66d0687a73e96cf2abc26b7480024bdf32d163185e2fb6864ab88e76c46ffebd"
+        }
+      ]
+    },
+    {
+      "name": "presentations",
+      "path": ".agents/skills/presentations",
+      "source": {
+        "provider": "OpenAI Codex bundled skill",
+        "bundleVersion": "26.1013.11914",
+        "skill": "presentations",
+        "plugin": "presentations"
+      },
+      "adaptations": [
+        "Normalize display-style name to lowercase local skill identifier"
+      ],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 317,
+          "sha256": "35fa03254b9d9e2c859a2e1d343406df161e70c07af43a352fc6424d01c03776"
+        },
+        {
+          "path": "artifact_tool_docs/api/API_DOCS.md",
+          "bytes": 13889,
+          "sha256": "f7ea5a8a2cfae1ea3e72e74d95b1a7c9644fdfac6171b7be5540d17f6bfb7d89"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/auto-layout.spec.md",
+          "bytes": 2132,
+          "sha256": "e58ac421e5aed6e944cab4fb3e59e3d5b33874844485fe89571ee2b6e3319051"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/charts.spec.md",
+          "bytes": 11206,
+          "sha256": "58f663ad37dfb3fe4396738a2baf7de6fa384f7e2273cefa6a5975db801c0961"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/comments.md",
+          "bytes": 2257,
+          "sha256": "7289cf3218ca948898f3d38a0a7951062b719277472c18ce2f672314dea0c416"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/connectors.md",
+          "bytes": 5937,
+          "sha256": "27c58bf7e31163648e95dcb730e1374097121d6657ebec93a5bae1b112bb3b40"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/cookbook/imported-deck.md",
+          "bytes": 5821,
+          "sha256": "c14afbe4cb05bf4843528333e9f7bbccda0e3d2f4a936e8fa2e72f61f59e9d22"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/cookbook/layout.md",
+          "bytes": 13361,
+          "sha256": "75484d640897d2ec8614aefcee6e17bb714b54eb2744c707562a632267e57264"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/fill.spec.md",
+          "bytes": 5460,
+          "sha256": "0c081891cb2355aa9a562a7f43cf168d2fafad8aa6af6ae11ed62115c162fb81"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/help.md",
+          "bytes": 6850,
+          "sha256": "087277c6b7c572dfd7b52ecc6c8cc9affbf33ab56c0b928651b18f476e03e044"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/images.spec.md",
+          "bytes": 7405,
+          "sha256": "fc2fedb1690527fdd14d847153f209ef22cb0d71dc389e2029cf19ccf01007f8"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/inspect.md",
+          "bytes": 5331,
+          "sha256": "be8353950fe46064af5d9d437d546c5abd61c634a249bc5c8e6c3487d25775ee"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/inspect.schema.json",
+          "bytes": 19480,
+          "sha256": "1a60266cc79bef1ff04ae15143480495c206a3fd5e2b48002d2efbb77a82e134"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/jsx.md",
+          "bytes": 10082,
+          "sha256": "5461aa523334ee56f5f44beee273846393478ad4ca106b1a1f0da9a300e34d3d"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/layout.spec.md",
+          "bytes": 6123,
+          "sha256": "0f003841d75c1c6243c990aaf090c7ae1aaa878d4d830032f07744521f4075e6"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/master.spec.md",
+          "bytes": 1499,
+          "sha256": "25f5032926c3bd7345ca46ca4bc7401d837e8c3d4645853ebd0c21e4d842ac4f"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/presentation.spec.md",
+          "bytes": 10167,
+          "sha256": "f5f91a626b63d7c5fe177c2666791e4895618e9d0773d2c83edad5cd3599f8d8"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/rich-text.spec.md",
+          "bytes": 6258,
+          "sha256": "9ff88fde3ac6595aabc3b17ad767c442f2eb35ff1aeb171f2b11a839b22dc93a"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/shapes.spec.md",
+          "bytes": 7832,
+          "sha256": "bcef41da95bf05cf5e12f14b7e2b916dcd4ab48eb7a8bf8242094cf59532684b"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/slide.spec.md",
+          "bytes": 5404,
+          "sha256": "7f7a6e82e3f295ea0523963108f7d5cb776b7d40483b52719f063ef589791479"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/speaker-notes.spec.md",
+          "bytes": 1103,
+          "sha256": "52b09b2cf44fa3eb5224a7507a784cea17b37601520d587fb9e29a4ea3666eb9"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/styles.spec.md",
+          "bytes": 2114,
+          "sha256": "142d7abd0e54404fa49067f9a294bf20512540b89d304174386c4db90a73e74c"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/tables.spec.md",
+          "bytes": 4441,
+          "sha256": "5d294873f5ca630f4400f627e176517b170ef1a61414be008c926c8c216414d4"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/theme.spec.md",
+          "bytes": 2232,
+          "sha256": "12976bae67a923f9028c9af51db1b733f733544bd11dfce807e6ebf4bc5bafb4"
+        },
+        {
+          "path": "artifact_tool_docs/api/references/tokens.md",
+          "bytes": 11903,
+          "sha256": "aa7601c6e7156d45ceeba151ad48633f8556a080678b7ee44daa74c32b42c478"
+        },
+        {
+          "path": "artifact_tool_docs/API_QUICK_START.md",
+          "bytes": 8150,
+          "sha256": "7d85a27810a5c784062d37df9fa6dbda36a74c34e171df7d31819ed5fbcd4fe3"
+        },
+        {
+          "path": "assets/file-presentation.png",
+          "bytes": 11787,
+          "sha256": "a3c03edcadfe5af5a06c709b264d276d7e8ac6e150d69729c502459998b2a680"
+        },
+        {
+          "path": "container_tools/artifact_tool_utils.mjs",
+          "bytes": 55404,
+          "sha256": "17e988ef8c486800328e624154aa20b42c30fa85a236f60fbc9254d7a86bf18f"
+        },
+        {
+          "path": "container_tools/create_montage.py",
+          "bytes": 10635,
+          "sha256": "1b9031247132b787748ccd5f65d29f2be6e25bc362578e2cf040b3394811e86b"
+        },
+        {
+          "path": "container_tools/ensure_raster_image.py",
+          "bytes": 7332,
+          "sha256": "2c3bc18a8cddf737f5b3f769561b2cf8c55fe190387e53c2487f7c1b4d0ae8a7"
+        },
+        {
+          "path": "container_tools/inspect_presentation_layout_geometry.py",
+          "bytes": 101992,
+          "sha256": "cfdc5076ffc4bc8c0c1d4578b6ce64c883e2d514780348bb278365fdb9f0e10d"
+        },
+        {
+          "path": "container_tools/inspect_presentation_package_integrity.py",
+          "bytes": 29495,
+          "sha256": "b54cb6004fe58213bcf4268c355e3f15ea78cd9dbfe0c955d65e92024fe080c8"
+        },
+        {
+          "path": "container_tools/mark_artifact_operation_started.mjs",
+          "bytes": 743,
+          "sha256": "6f46ccf38f7d266ad459309233c597d8f7221ad3fda26af91aeba80bbcd322dd"
+        },
+        {
+          "path": "container_tools/materialize_literal_chart_workbooks.py",
+          "bytes": 36857,
+          "sha256": "5f9c89e72f0dd3e8aeca48d2ac7c429fb57dd801e4d3fb57d9c71d189154c8bd"
+        },
+        {
+          "path": "container_tools/native_chart_title_gate.py",
+          "bytes": 6135,
+          "sha256": "494f8dddc3de753fda80f61498c07ca0e744e585a0b84f46ba9e2a88dfb1613f"
+        },
+        {
+          "path": "container_tools/native_quantitative_chart_gate.py",
+          "bytes": 45307,
+          "sha256": "047ac10a0acda115d95a551c91fe16225aaa8d44735170091c80294518225c60"
+        },
+        {
+          "path": "container_tools/native_table_arithmetic_gate.py",
+          "bytes": 21259,
+          "sha256": "604db17de8cce452c515a8e7929bf1fccfc08ad7851ac29eff1a9b70879a50b0"
+        },
+        {
+          "path": "container_tools/rasterize_svg.mjs",
+          "bytes": 1611,
+          "sha256": "73d9ed4573d4a286c1dae520245df86885520f6c85dc83e19649d962e4852982"
+        },
+        {
+          "path": "container_tools/render_presentation.mjs",
+          "bytes": 3317,
+          "sha256": "49024ae5949965f2d163daafb05d4e33b543ea59007a95253a78183b9357c1b8"
+        },
+        {
+          "path": "container_tools/render_slides.py",
+          "bytes": 8661,
+          "sha256": "af5fbe8caf40be4ba57ad42993ff0c3792c0a7e97bd65bbba86ed1494911a220"
+        },
+        {
+          "path": "container_tools/runtime_helpers.mjs",
+          "bytes": 1871,
+          "sha256": "79ed0013a2d5ae7d45ad111cbc9188a5c804d461c24a123725832c5eeaab11f1"
+        },
+        {
+          "path": "container_tools/runtime_helpers.py",
+          "bytes": 3600,
+          "sha256": "93322ca08c0bf5e29e7fd1297d1b3cfc307550cf4251098b366bf4cc42b4370a"
+        },
+        {
+          "path": "container_tools/slides_test.py",
+          "bytes": 6560,
+          "sha256": "e0f660c3a03c524e54a2b0ac4cdd55646502f18bad409593d056a1ea570f5de0"
+        },
+        {
+          "path": "container_tools/template_source_fidelity_gate.py",
+          "bytes": 22193,
+          "sha256": "0e070dce9102403cdd418bfe0810c23f8886d074430ba8fe597cde352a83b7be"
+        },
+        {
+          "path": "domain_guidance/finance.md",
+          "bytes": 1824,
+          "sha256": "a0c1799721deab74867b624b15bee44f80a4bd7a6813db2f0bcd61ad90c6b41a"
+        },
+        {
+          "path": "references/cover_art_direction.md",
+          "bytes": 1364,
+          "sha256": "753e58efd6da31fc68076c554ae919e46893d7a0a15f37c4cf357e7c41025d00"
+        },
+        {
+          "path": "references/finalization.md",
+          "bytes": 6040,
+          "sha256": "41a51f6269a26ba30120d575a6736edd313187fb6de4060fd72debbebd0d6806"
+        },
+        {
+          "path": "references/implementation.md",
+          "bytes": 3489,
+          "sha256": "797de82fbe324ff30229190c433ccb13122eb2570040c747cd76d9b78a09d4a4"
+        },
+        {
+          "path": "references/native_bullets.md",
+          "bytes": 1554,
+          "sha256": "727fc17af9a12fb6937b1a7ac41ba6d99ce0e28ced94c06df3c05fd33ecca15d"
+        },
+        {
+          "path": "references/native_evidence.md",
+          "bytes": 3197,
+          "sha256": "9aadd5bfb102663a9b4cf1b9282fa209645e6ce1906381c2c9e0e573659b4cc3"
+        },
+        {
+          "path": "references/template-elicitation.md",
+          "bytes": 1503,
+          "sha256": "b0aab045f830d6a05dbab2bd7d9ca747bd68826e69328e01479589026f7ab7c0"
+        },
+        {
+          "path": "references/template_following.md",
+          "bytes": 2570,
+          "sha256": "16ce4367c3029497bb441c850c577dbfb8de767cb450d52d8c0be9688dcd0649"
+        },
+        {
+          "path": "routing/google_slides.md",
+          "bytes": 1307,
+          "sha256": "fd3998117596a48fd73eb22bb8c1e7998d0e53949382b837ff6922deaf5bfa3a"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 30044,
+          "sha256": "84d2602a961389e54e4e8028c28956512969668c501e0f38e367f9ec921be28d"
+        },
+        {
+          "path": "style_guidelines.md",
+          "bytes": 3179,
+          "sha256": "b682d1beb638b6ce77ecab86f83afcbde7a68207a749bc7994d8fd805feec619"
+        },
+        {
+          "path": "template_following_scripts/check_template_fidelity.mjs",
+          "bytes": 18101,
+          "sha256": "204c580f53818ca188b04af66b2cec6e588520d832bc9f25305686893bf0bd18"
+        },
+        {
+          "path": "template_following_scripts/inspect_template_deck.mjs",
+          "bytes": 8977,
+          "sha256": "03a8ea3b36a7b1859ccda3b2cce7c3c73bb0c691fa0114548b804bf5a5465661"
+        },
+        {
+          "path": "template_following_scripts/make_contact_sheet.py",
+          "bytes": 1781,
+          "sha256": "69a1f031bca5e0a214aaa848460b36ee17c641b8865d7a5d0a9a0308dea320e8"
+        },
+        {
+          "path": "template_following_scripts/prepare_template_starter_deck.mjs",
+          "bytes": 11169,
+          "sha256": "67b18d023a5c28e6c8e9c8d7a139ec441b55ae73f8f3159d122f4b2d34c371bf"
+        },
+        {
+          "path": "template_following_scripts/validate_template_plan.mjs",
+          "bytes": 19353,
+          "sha256": "d8aad11b03275eaf800f96ec6c58731c68033312f5b13a44f5c9291ca5e3bacf"
+        }
+      ]
+    },
+    {
+      "name": "real-estate-search",
+      "path": ".agents/skills/real-estate-search",
+      "source": {
+        "repository": "NomaDamas/k-skill",
+        "commit": "50d7bb30f9e2d6b8b09da1055d497fe616820e30",
+        "sourcePath": "real-estate-search",
+        "sourceUrl": "https://github.com/NomaDamas/k-skill/tree/50d7bb30f9e2d6b8b09da1055d497fe616820e30/real-estate-search",
+        "license": "MIT"
+      },
+      "adaptations": [
+        "SKILL.md: read pinned local instruction.md instead of executing npm instruct/update",
+        "LICENSE: retain upstream MIT license",
+        "instruction.md: replace original Windows user path with workspace-relative helper path"
+      ],
+      "files": [
+        {
+          "path": "instruction.md",
+          "bytes": 7832,
+          "sha256": "41e567f7aa165cdf64c333c57ee0540b184f7fb4ae9cb0362d6be8e775ab0879"
+        },
+        {
+          "path": "LICENSE",
+          "bytes": 1056,
+          "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685"
+        },
+        {
+          "path": "scripts/nationwide_daily_report.py",
+          "bytes": 22125,
+          "sha256": "40f965d1322723c4de33fd178faca68da74e0122283d8ea88936e24236675668"
+        },
+        {
+          "path": "skill.json",
+          "bytes": 573,
+          "sha256": "8dff32d80ccfb9a34d32074aa78f666e50e537fef22b9ef94f17c20cade5f1e4"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 1254,
+          "sha256": "66047d5028943aa05d90d729d3757fc40ec50592c542e20b73920c780621ad79"
+        },
+        {
+          "path": "tests/test_nationwide_daily_report.py",
+          "bytes": 4663,
+          "sha256": "d768273444745000bfabc130028781bb3b576bb756ea841fca6c29dc4887b4e4"
+        }
+      ]
+    },
+    {
+      "name": "scientific-visualization",
+      "path": ".agents/skills/scientific-visualization",
+      "source": {
+        "repository": "K-Dense-AI/claude-scientific-skills",
+        "commit": "a1043ef544e3a100c28e70a736b6cf32554d0677",
+        "sourcePath": "skills/scientific-visualization",
+        "sourceUrl": "https://github.com/K-Dense-AI/claude-scientific-skills/tree/a1043ef544e3a100c28e70a736b6cf32554d0677/skills/scientific-visualization",
+        "license": "MIT"
+      },
+      "adaptations": [
+        "SKILL.md: retain runtime compatibility under metadata for local validator compatibility",
+        "LICENSE.md: retain upstream MIT license"
+      ],
+      "files": [
+        {
+          "path": "assets/color_palettes.py",
+          "bytes": 6756,
+          "sha256": "98ee4aa4b9bbb010996d55144ea6bf45a0ab294009b9bb0ef6d9c5ec9fed5154"
+        },
+        {
+          "path": "assets/nature.mplstyle",
+          "bytes": 1624,
+          "sha256": "f37a361cdda8846da0794fd879cc8173402094f110239d57e0227fdd8299a4f6"
+        },
+        {
+          "path": "assets/presentation.mplstyle",
+          "bytes": 1465,
+          "sha256": "d0e5a768e5965aa3893b12c0f7decd4c3b09502044391a840ebdee37dfea44da"
+        },
+        {
+          "path": "assets/publication.mplstyle",
+          "bytes": 1822,
+          "sha256": "eba3001f346649a9e41d9ac1d56101abbae10aefecdad3be9530f4c9cd9269b3"
+        },
+        {
+          "path": "assets/publisher_profiles.json",
+          "bytes": 10870,
+          "sha256": "1e1b1b5a4e0e3dfc57877f2abf1e96888fe6b65617234b078f193b8f76e0ebe9"
+        },
+        {
+          "path": "LICENSE.md",
+          "bytes": 1068,
+          "sha256": "09b02a3c9df3053c55531d503357a9c7cde275970e6c3ceaa1ddf5f0e90b40c1"
+        },
+        {
+          "path": "references/color_palettes.md",
+          "bytes": 9094,
+          "sha256": "c9b6a596dd1dd1e08050fdcbb304a0268ee515bce2120a9bbd3fba31cd7fa119"
+        },
+        {
+          "path": "references/journal_requirements.md",
+          "bytes": 11200,
+          "sha256": "f7c4b6660eb70f7c5778d13908409e1dc690f00e3dfc8314f430feb89781740c"
+        },
+        {
+          "path": "references/matplotlib_examples.md",
+          "bytes": 12165,
+          "sha256": "74fd5977ce57b09b476285309559bbcbe3b1748943b719844b28a6b61378c041"
+        },
+        {
+          "path": "references/publication_guidelines.md",
+          "bytes": 12853,
+          "sha256": "5f70c6b22dbb5e0fae18b0f1197b8794896bf7afc059874bcf7afbd5aa86bbe5"
+        },
+        {
+          "path": "references/sources.md",
+          "bytes": 10697,
+          "sha256": "3ff34759c0fed3baf33286a8005fd81f0c3466a554c8b0d45f43ad30b1e5b505"
+        },
+        {
+          "path": "scripts/_common.py",
+          "bytes": 4618,
+          "sha256": "e4eea2c2e5f5d8cfa544c6bed152cdb88a3d7c7952df99bcd74b45077fd6f707"
+        },
+        {
+          "path": "scripts/export_plan.py",
+          "bytes": 19682,
+          "sha256": "c20962bf4c624b9939c80bd16815fc0a18fe2be285f0654a6a53704c663add0e"
+        },
+        {
+          "path": "scripts/figure_export.py",
+          "bytes": 23652,
+          "sha256": "fe9c77878da61297ce55224b67282d128631deb628d930aa1929c9eb7330bf79"
+        },
+        {
+          "path": "scripts/image_metadata.py",
+          "bytes": 26596,
+          "sha256": "45f79cefd99b8e5dabcbfd1a29b7346363f383411cc43540bf9f73e67fed634e"
+        },
+        {
+          "path": "scripts/palette_audit.py",
+          "bytes": 11654,
+          "sha256": "3a90b3c9a4a39dde6a341dc3de7b99cd2bca4773c66564fc90cdc2706a5a8165"
+        },
+        {
+          "path": "scripts/style_presets.py",
+          "bytes": 16173,
+          "sha256": "8413cfae7f2cbc4a5dd9d4301d74b051fd8eb0c7a4b3375ae59e1da91db3a985"
+        },
+        {
+          "path": "scripts/style_preview.py",
+          "bytes": 7762,
+          "sha256": "ca14e714dc2fb32541ff80292db97b3acbac074a65c4f2fb290f38354f880ba7"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 15787,
+          "sha256": "69e8fa416412a7fbf8e2ff3a9ba87b031fc6c7b42b97d8adb9ab06730849ea70"
+        }
+      ]
+    },
+    {
+      "name": "spreadsheets",
+      "path": ".agents/skills/spreadsheets",
+      "source": {
+        "provider": "OpenAI Codex bundled skill",
+        "bundleVersion": "26.1013.11914",
+        "skill": "spreadsheets",
+        "plugin": "spreadsheets"
+      },
+      "adaptations": [
+        "Normalize display-style name to lowercase local skill identifier"
+      ],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 371,
+          "sha256": "18eb739db3a18e7d1bbd2c17b6884eff011f9b07814ab23216aba926b4de9cd7"
+        },
+        {
+          "path": "artifact_tool_docs/API_QUICK_START.md",
+          "bytes": 26274,
+          "sha256": "313e2256d212671638006006926bd80474ba04c9347d2caff7f575e9ea958ab2"
+        },
+        {
+          "path": "artifact_tool_docs/DATA_TABLES.md",
+          "bytes": 3649,
+          "sha256": "627423c5c263a0df909c3f7b2253098d80a2c10f068c0756a828d68509d3021e"
+        },
+        {
+          "path": "artifact_tool_docs/SPARKLINES.md",
+          "bytes": 1702,
+          "sha256": "284d40cb8624604c638bd3131b004db73fc193bce421e0a085959e0ea6f1afef"
+        },
+        {
+          "path": "assets/file-spreadsheet.png",
+          "bytes": 11988,
+          "sha256": "3a1c5e6c52a1877942b8ef8654247fbe1c4a82f6df8ef464dc99983fc72cd6fb"
+        },
+        {
+          "path": "container_tools/mark_artifact_operation_started.mjs",
+          "bytes": 765,
+          "sha256": "fd95cb9918e52bbc2323ed1854fdc7510361f66cbe50446f6fcf0b9b21fa1ded"
+        },
+        {
+          "path": "domain_guidance/financial_models.md",
+          "bytes": 7282,
+          "sha256": "3169cc0e2453f3c34f63ef639aab22abc5686c6e2639f1d4ad7dc0235e8480ee"
+        },
+        {
+          "path": "domain_guidance/healthcare.md",
+          "bytes": 4736,
+          "sha256": "8edae030b3abb0ef178f5a38691f64d7d9f4a462a70c0656ae8650605363f921"
+        },
+        {
+          "path": "domain_guidance/marketing_advertising.md",
+          "bytes": 3950,
+          "sha256": "b2e087facba8e407fb5d47d55505ea544ca7c7ff5d402fd6a535093df740d086"
+        },
+        {
+          "path": "domain_guidance/scientific_research.md",
+          "bytes": 3725,
+          "sha256": "bad46ddb8561c02b5460cd8dcb9bc9018b8b24df03a6688af7b9a3977b5b298c"
+        },
+        {
+          "path": "features/charts.md",
+          "bytes": 5870,
+          "sha256": "a5bb73e5a3c0f7ec44cf0737d5dc25ae690e420a99d37e23cf8144d8316f56a3"
+        },
+        {
+          "path": "references/image-references.md",
+          "bytes": 1072,
+          "sha256": "7fe546860468950ed80f428c79eea269383aa30f421b957546666ee15161e6b8"
+        },
+        {
+          "path": "references/read_only_qna.md",
+          "bytes": 1102,
+          "sha256": "993fa777f0f3003c2a1c3b2021a1f9d78f7a177620603e47cc9cff097cf156fd"
+        },
+        {
+          "path": "references/template-elicitation.md",
+          "bytes": 1501,
+          "sha256": "3f87388cf81f6cbc72949a6842b614bbc373238bf0f52f7d43d25e9b4dab757a"
+        },
+        {
+          "path": "routing/google_sheets.md",
+          "bytes": 1509,
+          "sha256": "1f55af62cc2819f5610a35abde281aa7b0b105ef6edb2c49996809760ddc0685"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 66536,
+          "sha256": "a78bec390a3032ca9c16053ae020ccd5fd9488936516d9232f06a303b6efba27"
+        },
+        {
+          "path": "style_guidelines.md",
+          "bytes": 10165,
+          "sha256": "a0e328147991a4acc3d867d8e10a0a6697373ff2fe43eefd41646c83b29ad630"
+        },
+        {
+          "path": "workflows/create_workflows.md",
+          "bytes": 1575,
+          "sha256": "b24cbf85c4358c2269352bf44002ad5a1e24174983010a836f5ead6e6c0b3958"
+        },
+        {
+          "path": "workflows/edit_workflows.md",
+          "bytes": 2505,
+          "sha256": "d195ef03edbb07036706659bfc899b97afd0aa6121f7d607c1d1e0cd8a47f8e8"
+        }
+      ]
+    },
+    {
+      "name": "validate-data",
+      "path": ".agents/skills/validate-data",
+      "source": {
+        "repository": "openai/plugins",
+        "commit": "0722921d5542fc593105c27bd52630babd8b8c2a",
+        "sourcePath": "plugins/data-analytics/skills/validate-data",
+        "sourceUrl": "https://github.com/openai/plugins/tree/0722921d5542fc593105c27bd52630babd8b8c2a/plugins/data-analytics/skills/validate-data",
+        "license": "not declared in repository at pinned commit; redistribution rights not assessed"
+      },
+      "adaptations": [
+        "SKILL.md: clarify optional upstream connector placeholders and companion skills; use available Codex local tools when absent"
+      ],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 287,
+          "sha256": "390f4698c68e9b7036b43c2025afa8633f2c4a129e1f172c3ce5c3b4b3320d32"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 14659,
+          "sha256": "01c6d65ad14500baad3f7624215715cd8aef1a95cfda7fe6bcc57728c684fb09"
+        }
+      ]
+    },
+    {
+      "name": "real-estate-program-analysis",
+      "path": ".agents/skills/real-estate-program-analysis",
+      "source": {
+        "type": "workspace-authored",
+        "basis": "사용자 지시와 워크스페이스 프로그램의 실제 계산·출력 모듈",
+        "baseProgramVersion": "0.6.2"
+      },
+      "adaptations": [
+        "워크스페이스 보고서 요청에 자동 적용",
+        "현재 프로그램 엔진 재사용; 별도 점수표 복제 금지",
+        "생활환경 6개 평가: 교통·교육·상권·자연·병원·학원",
+        "실거래·고객조건·지도·브랜드·비공개 메모 기준 유지; 과거 상품·가격 점수와 구분",
+        "묶음 우선 조회·부족 항목 보충·같은 날 공식 단지별 공개자료 캐시·서비스가 확인한 조회 한도 표시",
+        "학교별 공개 학업정보·성취도·순위의 조회·고객 출력 제외; 기본 학교·통학구역과 6개 평가 유지",
+        "2026-10-20: Academy scope restricted to entrance/prep, Korean, English, math; fixed weights 40/20/20/20."
+      ],
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "bytes": 390,
+          "sha256": "b0e680fc9bd35f258c3fcd2d985a4512647cb839c1f62b1a32938ad665106c68"
+        },
+        {
+          "path": "references/engine-workflow.md",
+          "bytes": 8202,
+          "sha256": "438c84f7e4f35bc381473943bf60f412bb38daf1948aa9a3d73a86a6ec1a45bc"
+        },
+        {
+          "path": "scripts/render-pdf.cjs",
+          "bytes": 1461,
+          "sha256": "cbbc2546a9ced70229858cd66641c51df6506999e8f16601ae664ac563eedc96"
+        },
+        {
+          "path": "scripts/run-analysis.cjs",
+          "bytes": 6121,
+          "sha256": "f0dd8b35317b81204b5c5757ffaf99dc65d21fd9b1098ab7edcf88572d1c2582"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 8656,
+          "sha256": "845f639bc1fac81ad543dbdf77c3bc9283ac00deef4ccabbdc0b8f600b144e1d"
+        },
+        {
+          "path": "references/ipzitalk-integration.md",
+          "bytes": 5302,
+          "sha256": "d4a6dab41f809920d09ec7c865a0a0ef9907f67772caca3e03ae2deb20d17c7d"
+        }
+      ]
+    },
+    {
+      "name": "data-storytelling",
+      "path": ".agents/skills/data-storytelling",
+      "source": {
+        "repository": "wshobson/agents",
+        "commit": "0874a27b17a22e2b7c2e2bcd725768e0803cad06",
+        "sourcePath": "plugins/business-analytics/skills/data-storytelling",
+        "sourceUrl": "https://github.com/wshobson/agents/tree/0874a27b17a22e2b7c2e2bcd725768e0803cad06/plugins/business-analytics/skills/data-storytelling",
+        "license": "MIT"
+      },
+      "adaptations": [
+        "Retain upstream content and references; preserve root repository MIT license; use within existing real estate report engine and verified facts only."
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "bytes": 1068,
+          "sha256": "f89abb55d9f073f38f1703e4518f0613c788c6174be7f13b8dfe48a1c076c746"
+        },
+        {
+          "path": "references/details.md",
+          "bytes": 10306,
+          "sha256": "b3442d4692d4470091f3aee50a092aebae32df0c26ccc3526b1b2e3bfe614407"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 2119,
+          "sha256": "0244a9ef6bca2df0762425b78912d27061b9b93f9b09987ad7bc074752a0cb50"
+        }
+      ]
+    },
+    {
+      "name": "report-validation",
+      "path": ".agents/skills/report-validation",
+      "source": {
+        "repository": "anthropics/knowledge-work-plugins",
+        "commit": "a266ab8c3c754a3ccf7a634044fc1595fc06e50e",
+        "sourcePath": "data/skills/validate-data",
+        "sourceUrl": "https://github.com/anthropics/knowledge-work-plugins/tree/a266ab8c3c754a3ccf7a634044fc1595fc06e50e/data/skills/validate-data",
+        "license": "Apache-2.0"
+      },
+      "adaptations": [
+        "Rename local skill to report-validation to avoid an existing validate-data skill collision.",
+        "Copy CONNECTORS.md into skill folder and resolve its local link; preserve repository Apache-2.0 license.",
+        "Use Codex-supported YAML frontmatter and local /report-validation examples; remove upstream argument-hint."
+      ],
+      "files": [
+        {
+          "path": "CONNECTORS.md",
+          "bytes": 1061,
+          "sha256": "79de0e9613ef7870e773b6dcdcb7d50f4bff2c0574c14ab5e0aeb29014dcec7b"
+        },
+        {
+          "path": "LICENSE",
+          "bytes": 11607,
+          "sha256": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26"
+        },
+        {
+          "path": "SKILL.md",
+          "bytes": 14884,
+          "sha256": "faa9545f215a9b92122eea6567b2b4ae2c3de0b865559c0358bc2c3eaf0a33bb"
+        }
+      ]
+    }
+  ],
+  "excludedSources": [
+    {
+      "name": "global xlsx",
+      "reason": "source LICENSE.txt prohibits retaining and reproducing the materials outside authorized services; use included spreadsheets workflow"
+    },
+    {
+      "name": "managed documents package",
+      "reason": "source LICENSE.txt prohibits retaining and reproducing the materials outside authorized services; use included MIT Word skill and target runtime renderers"
+    }
+  ],
+  "historicalDataServiceCheck": {
+    "date": "2026-10-15",
+    "regionCodeProxy": "passed: 강남구 11680",
+    "apartmentTradeProxy": "HTTP 502",
+    "commercialTradeProxy": "HTTP 502",
+    "meaning": "historical lookup status only; recheck when used"
+  },
+  "workspaceFiles": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 32057,
+      "sha256": "eaadb0e7d4f7cc6e08cab078912295a7075c72f8d73f391aa6d658f422171647"
+    },
+    {
+      "path": ".codex/config.toml",
+      "bytes": 148,
+      "sha256": "702b91961703a35b3d17e16d2e88456668cb14817066ebb14995000cc1eb854c"
+    },
+    {
+      "path": ".codex/PORTABILITY.md",
+      "bytes": 8316,
+      "sha256": "f5f9846ba0139a60e3ee7d20c537ecfdf2e12bc6a28d852af968437190d92d90"
+    },
+    {
+      "path": ".codex/runtime-baseline.json",
+      "bytes": 1885,
+      "sha256": "012515bddf15586c95ccc419107c5e09921ca569a11034d1825a23e3e90d3142"
+    }
+  ],
+  "validation": {
+    "status": "passed",
+    "relocatedToDifferentFolder": true,
+    "relocatedFolderContainsSpacesAndKorean": true,
+    "counts": {
+      "skills": 13,
+      "hashes": 200,
+      "pythonSyntax": 34,
+      "javascriptSyntax": 11,
+      "markdownFiles": 121,
+      "cliEntrypoints": 5,
+      "pptxTemplates": 1
+    },
+    "wordChecks": [
+      "docx_create.py",
+      "docx_read.py",
+      "docx_validate.py"
+    ],
+    "wordVisualRender": "not exercised; requires target renderer",
+    "externalAccountServices": "not copied or tested",
+    "errors": [],
+    "workspaceProgramAnalysis": {
+      "checkedAt": "2026-10-18T13:15:30.038937+00:00",
+      "skillFrontmatter": "passed",
+      "automaticInvocation": true,
+      "relativeReferences": "passed",
+      "savedReportParity": "prices, scores, detailed HTML and customer summary identical to program",
+      "newBundleParity": "scores and averages identical",
+      "repeatExport": "verified map retained",
+      "privateNotes": "excluded from customer HTML",
+      "missingMap": "reported as missing",
+      "pdf": "상세 6쪽·고객 요약 2쪽 렌더링·시각 검토; 저장된 동일 보고서 사용",
+      "sourceUnchanged": true,
+      "aiCalls": 0,
+      "networkCalls": 0,
+      "otherPcExecution": "not tested; dependencies and services must be checked on target PC",
+      "customerSummaryMap": "same saved map passed to customer-summary.html, identical to app exporter",
+      "programVersion": "0.6.1"
+    },
+    "livingEnvironmentUpgrade": {
+      "programVersion": "0.6.0",
+      "unitTests": 387,
+      "failed": 0,
+      "liveEvidence": ".build/living060/live-research.json",
+      "schoolDisclosure": "official school matching; CAPTCHA-required page explicitly reported; no rank fabricated",
+      "legacyPreserved": true,
+      "skillParity": ".build/skill-parity-verification.json",
+      "visualReview": "상세 6쪽·요약 2쪽 전체 확인; 짧은 꼬리 페이지 없음",
+      "proof": ".build/living060/verification.json"
+    },
+    "researchOptimization": {
+      "programVersion": "0.6.1",
+      "replayProof": ".build/optimization061/benchmark.json",
+      "liveConnectionProof": ".build/optimization061/live-optimized.json",
+      "newCodexConnection": "program account reauthorized in logged-in Chrome; successful live queries",
+      "actualSourceReplay": "29 original calls; 27 cold replay calls; 0 repeated facility network calls; six scores unchanged",
+      "aiInputCharacters": "18448 to 13036 (-29.3%); not billed token measurement",
+      "completeBatchFixture": "8 score-only calls in synthetic complete-category tests; not live",
+      "ui": ".build/optimization061/ui/verification.json",
+      "unitTests": 405,
+      "failed": 0,
+      "liveProof": ".build/optimization061/live-new-account-verification.json",
+      "actualReduction": "same score-only evidence scope 29 to 19 MCP calls (-34.5%); repeat other area 0 calls; six scores unchanged",
+      "upstreamSkillCriteria": {
+        "repository": "https://github.com/chatdaeri/ipzitalk",
+        "current": "c020815f3e8bd9f20eb7b733425d8745eb84ee79",
+        "diagnostics": "c2020bb34d660c421e0cf0246558d86acf22ae71",
+        "integration": "references/ipzitalk-integration.md"
+      },
+      "nearbyLiveProof": ".build/optimization061/live-nearby.json",
+      "pdf": "detailed 7 pages and summary 2 pages; all rendered and visually inspected; no short tail"
+    },
+    "schoolAcademicRemoval": {
+      "programVersion": "0.6.2",
+      "checkedAt": "2026-10-18T13:36:07.829Z",
+      "unitTests": 396,
+      "failed": 0,
+      "scope": "lookup, AI evidence, detailed and summary exports; legacy narratives and academic links excluded",
+      "basicSchoolInformation": "preserved",
+      "savedReportParity": ".build/skill-parity-verification.json",
+      "networkCalls": 0,
+      "aiCalls": 0
+    }
+  },
+  "guidanceUpdatedAt": "2026-10-18T13:36:07.829Z"
+}

@@ -1,0 +1,277 @@
+{
+  "version": 1,
+  "reviewedOn": "2026-10-25",
+  "policy": "Exact file + rule + matched-value SHA-256 only; no folder or prefix exemptions.",
+  "findings": [
+    {
+      "file": ".agents/skills/presentations/artifact_tool_docs/api/references/comments.md",
+      "rule": "email",
+      "sha256": "18717f7f1f60f92207bd02972c16aec92f52b31c2a8442444df988d8e8503c5e",
+      "reason": "Upstream documentation example, not the project owner or a customer."
+    },
+    {
+      "file": ".agents/skills/presentations/artifact_tool_docs/api/references/comments.md",
+      "rule": "email",
+      "sha256": "bc15ce5d4fa97606bf6987d111db7d744e04fda69d93ca4653ec189387e02fb3",
+      "reason": "Upstream documentation example, not the project owner or a customer."
+    },
+    {
+      "file": ".agents/skills/presentations/artifact_tool_docs/api/references/cookbook/imported-deck.md",
+      "rule": "email",
+      "sha256": "a6d4603a83cefdac95ee5ec70abaaed6410d789143fa6ba3f5fdaab25ec75668",
+      "reason": "Upstream documentation example, not the project owner or a customer."
+    },
+    {
+      "file": "program/assets/brand-provenance.json",
+      "rule": "email",
+      "sha256": "5459844587bfc7184016fb64743caacdc47ea78df68c088b458f577502da3796",
+      "reason": "AI SHERPA public support contact, explicitly retained by the user on 2026-10-25."
+    },
+    {
+      "file": "program/package-lock.json",
+      "rule": "email",
+      "sha256": "b0373516d594ddd199b25c3655332b354837e065c5cc232f5043189897900ca7",
+      "reason": "Public third-party package author attribution."
+    },
+    {
+      "file": "program/src/brand.cjs",
+      "rule": "email",
+      "sha256": "5459844587bfc7184016fb64743caacdc47ea78df68c088b458f577502da3796",
+      "reason": "AI SHERPA public support contact, explicitly retained by the user on 2026-10-25."
+    },
+    {
+      "file": "program/src/web/index.html",
+      "rule": "email",
+      "sha256": "5459844587bfc7184016fb64743caacdc47ea78df68c088b458f577502da3796",
+      "reason": "AI SHERPA public support contact, explicitly retained by the user on 2026-10-25."
+    },
+    {
+      "file": "program/tests/ai-credentials.test.cjs",
+      "rule": "provider-key",
+      "sha256": "a6c0851894a6cbb721afbe84c1cd06aab7b1d753a09b2ebcaaeb9359317ab3c7",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/ai-credentials.test.cjs",
+      "rule": "provider-key",
+      "sha256": "ca05cfc62ac71727739496300653c6cec3ea01a9c5f9e28a89dd600955437e2c",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/ai-credentials.test.cjs",
+      "rule": "provider-key",
+      "sha256": "af9887d3c8274b5e28292c6df67a4e7a5c304d0d72304f61ab934f3f497fbb75",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/ai-credentials.test.cjs",
+      "rule": "secret-assignment",
+      "sha256": "af9887d3c8274b5e28292c6df67a4e7a5c304d0d72304f61ab934f3f497fbb75",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/ai-provider.test.cjs",
+      "rule": "secret-assignment",
+      "sha256": "79f18ff5ebb99fa1ae466b7ef768081e5e4eac72b18b5128e456dab71701d332",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/ai-provider.test.cjs",
+      "rule": "email",
+      "sha256": "715bfed2a3994e3624c5dbb39b733e19ff11fdf5395fee9ac3218197d512d3c2",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/brand.test.cjs",
+      "rule": "email",
+      "sha256": "5459844587bfc7184016fb64743caacdc47ea78df68c088b458f577502da3796",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/brand.test.cjs",
+      "rule": "email",
+      "sha256": "5b71ed5f946240dc76f3b7c24bdcbbc3528284ec5f4519249fb702686f0df5b8",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/claude.test.cjs",
+      "rule": "provider-key",
+      "sha256": "7b3e116ac60b27a1fdc200ceacf112ffb303bda50348a3c00e0a91382fa7e4c2",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/claude.test.cjs",
+      "rule": "provider-key",
+      "sha256": "14e56bca2649d86241e22273eea6fff166537dcd3f8dd1d1ee867092d5e073b1",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/claude.test.cjs",
+      "rule": "provider-key",
+      "sha256": "e99286712d405be9c5720bf9c5906afc61d481c576c9d0ff135535a2da6616b7",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/claude.test.cjs",
+      "rule": "secret-assignment",
+      "sha256": "14e56bca2649d86241e22273eea6fff166537dcd3f8dd1d1ee867092d5e073b1",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/claude.test.cjs",
+      "rule": "secret-assignment",
+      "sha256": "e99286712d405be9c5720bf9c5906afc61d481c576c9d0ff135535a2da6616b7",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/claude.test.cjs",
+      "rule": "url-credentials",
+      "sha256": "3ba4b9eb95fbafcb38a3dd4bc9886809ca70168cc4a8e552ed23d894cbb07df3",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/claude.test.cjs",
+      "rule": "email",
+      "sha256": "8ec22167d2e3da374e9ea68b16d7ea9a8d96def57ae45d4962800c6699c1607f",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/consultation.test.cjs",
+      "rule": "mobile-phone",
+      "sha256": "e07c05a8e77ced5616f86ea1b549bc9756f5525441e684765f04591b18b93b34",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/customer-summary-smoke.cjs",
+      "rule": "secret-assignment",
+      "sha256": "198a9793c317f90ffc871cb9bd85f2cfc5ec32613a0122015f165749b0405770",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/detail-evidence.test.cjs",
+      "rule": "url-secret",
+      "sha256": "4218638739c44bf8204ae61b4a63975c645657439fdb979325b4c26b090467db",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/efficiency.test.cjs",
+      "rule": "email",
+      "sha256": "dc582314dadc583d4eda0057c38c746b4a2b4ea48c5d6c42ba925e7f5ab43723",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/gemini.test.cjs",
+      "rule": "provider-key",
+      "sha256": "a6c0851894a6cbb721afbe84c1cd06aab7b1d753a09b2ebcaaeb9359317ab3c7",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/gemini.test.cjs",
+      "rule": "provider-key",
+      "sha256": "29de6d05c71cd5d5eb8e0675ce93ab1571072225142f68d9caa86ea9c54299cd",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/gemini.test.cjs",
+      "rule": "secret-assignment",
+      "sha256": "29de6d05c71cd5d5eb8e0675ce93ab1571072225142f68d9caa86ea9c54299cd",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/grounding-view.test.cjs",
+      "rule": "url-credentials",
+      "sha256": "d88f84291a4085c5aa7a5c1aab71a7baf64065e805c8c2c60c51aabf7ec55af9",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/grounding-view.test.cjs",
+      "rule": "email",
+      "sha256": "87887e050a715541f64ef93c627a4e5ff2b7e253fb84240f87fa91156898eaba",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/ipzitalk-bridge.test.cjs",
+      "rule": "secret-assignment",
+      "sha256": "cf4bd0fd3da677ba104d72c43c3099177b4298861d84484a44f139eeed5590f2",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/ipzitalk-bridge.test.cjs",
+      "rule": "secret-assignment",
+      "sha256": "598b6c4977127f59c204fc01230a256211560df0b73c18f4cada5bb42950e0e7",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/map-capture.test.cjs",
+      "rule": "url-credentials",
+      "sha256": "2853f40fe46678e06beb97e43b33485100fc029fdc57fa92824a2cd5af42294e",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/map-capture.test.cjs",
+      "rule": "email",
+      "sha256": "a20af5307759fb33c4940fbcf2ae369af9986e28b844739dac9beef4a8d497ab",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/naver-land.test.cjs",
+      "rule": "url-credentials",
+      "sha256": "c7c5f2b06661dd6d65d7c94311d7614e28c17d9fd9cf621801e69dd0d9e34501",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/naver-land.test.cjs",
+      "rule": "email",
+      "sha256": "2fe7afb1b4528763ae6d835d0c586534be1ba02fab330ed820ecbaa00035c83f",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/naver-land.test.cjs",
+      "rule": "mobile-phone",
+      "sha256": "e07c05a8e77ced5616f86ea1b549bc9756f5525441e684765f04591b18b93b34",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/naver-nearby.test.cjs",
+      "rule": "url-credentials",
+      "sha256": "afa2ec26cb7e89b88dcbb01f9a51c68d54b863ff005c2b6d0bb31df90c05b7df",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/naver-nearby.test.cjs",
+      "rule": "email",
+      "sha256": "147a19683748bf8d01d9f6522a580c92dd5c2178c1cf12d9b48f979d14515b14",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/naver-page.test.cjs",
+      "rule": "url-credentials",
+      "sha256": "c7c5f2b06661dd6d65d7c94311d7614e28c17d9fd9cf621801e69dd0d9e34501",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/naver-page.test.cjs",
+      "rule": "email",
+      "sha256": "2fe7afb1b4528763ae6d835d0c586534be1ba02fab330ed820ecbaa00035c83f",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/price-scoring.test.cjs",
+      "rule": "url-credentials",
+      "sha256": "b27584a33df1fba8f56ef4415bc6ed645dd70c8bfc9f0001adb6121006f295d0",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/price-scoring.test.cjs",
+      "rule": "email",
+      "sha256": "f34b6c7e2a33aa80d9acacff3f27480756fa768bc9cab5e1a69522f6775a4305",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": "program/tests/privacy-check.test.cjs",
+      "rule": "document-author",
+      "sha256": "1ebed2737d0a613dcfe3ce420a8788ce8d775199711b213701ab6017fd8fe077",
+      "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    }
+  ]
+}

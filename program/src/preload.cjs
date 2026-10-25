@@ -1,0 +1,11 @@
+'use strict';
+const {contextBridge,ipcRenderer}=require('electron');
+const names=['app-info','support','copy-email','activation-status','activate','copy-request','issuer-status','issue','copy-code','ipzitalk-usage','map-usage','usage','status','list','load','search-types','select-property','generate','retry-map','refresh-scores','cancel','demo','login','map-login','logout','settings','export','export-summary','copy-summary','save-consultation','open-evidence','folder','open','backup','restore'];
+names.push('import-naver-land','import-naver-link');
+names.push('gemini-connect','gemini-disconnect','gemini-check');
+names.push('claude-connect','claude-disconnect','claude-check');
+const api={};for(const name of names)api[name]=async(...args)=>{const r=await ipcRenderer.invoke('helper:'+name,...args);if(!r.ok){const error=new Error(r.error);throw error;}return r.data;};
+api.connectGemini=api['gemini-connect'];api.disconnectGemini=api['gemini-disconnect'];api.checkGemini=api['gemini-check'];
+api.connectClaude=api.claudeConnect=api['claude-connect'];api.disconnectClaude=api.claudeDisconnect=api['claude-disconnect'];api.checkClaude=api.claudeCheck=api['claude-check'];
+api.onEvent=callback=>{const listener=(_event,data)=>callback(data);ipcRenderer.on('helper:event',listener);return ()=>ipcRenderer.removeListener('helper:event',listener);};
+contextBridge.exposeInMainWorld('helper',api);

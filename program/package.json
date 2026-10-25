@@ -1,0 +1,109 @@
+{
+  "name": "real-estate-helper",
+  "productName": "부동산 도우미",
+  "version": "0.6.26",
+  "pcAuthentication": "test",
+  "private": true,
+  "description": "지인 부동산 사장님을 위한 PC 설치형 분석 도우미",
+  "author": "AI SHERPA",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "security:check": "node scripts/check-private-data.cjs --worktree --report .private/security-review/latest.json",
+    "prepare:resources": "node scripts/prepare.cjs",
+    "pack": "npm run prepare:resources && electron-builder --win --x64 --dir",
+    "dist": "npm run prepare:resources && electron-builder --win nsis --x64",
+    "smoke": "node scripts/run-smoke.cjs"
+  },
+  "dependencies": {
+    "@openai/codex": "0.162.1",
+    "@xmldom/xmldom": "0.8.15",
+    "csv-parse": "^7.0.3",
+    "docx": "9.5.1",
+    "exceljs": "4.4.0",
+    "jszip": "^3.10.1",
+    "pdf2json": "4.1.0",
+    "pptx-automizer": "^0.9.4",
+    "pptxgenjs": "4.0.1",
+    "proj4": "2.22.0",
+    "unzipper": "0.12.5"
+  },
+  "devDependencies": {
+    "electron": "44.7.2",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "kr.local.realestatehelper",
+    "afterAllArtifactBuild": "scripts/after-artifacts.cjs",
+    "asar": true,
+    "directories": {
+      "output": "../release"
+    },
+    "files": [
+      "src/**/*",
+      "tests/electron-smoke.cjs",
+      "tests/fixtures/naver-smoke.cjs",
+      "tests/comparison-smoke.cjs",
+      "tests/type-smoke.cjs",
+      "package.json",
+      "!node_modules/@openai/**/*",
+      "tests/live-verification.cjs",
+      "tests/live-comparison-verification.cjs",
+      "tests/name-search-smoke.cjs",
+      "tests/detail-evidence-smoke.cjs",
+      "tests/average-layout-smoke.cjs",
+      "tests/property-switch-smoke.cjs",
+      "tests/candidate-mapping-smoke.cjs",
+      "tests/report-flow-smoke.cjs",
+      "tests/customer-summary-smoke.cjs",
+      "tests/export-location-smoke.cjs",
+      "tests/provider-ui-smoke.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/workspace",
+        "to": "workspace"
+      },
+      {
+        "from": "resources/codex",
+        "to": "codex"
+      },
+      {
+        "from": "resources/manifest.json",
+        "to": "resource-manifest.json"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "RealEstateHelper-Setup-${version}-${arch}.${ext}",
+      "icon": "assets/app.ico",
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "부동산 도우미",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "include": "assets/installer-branding.nsh"
+    }
+  },
+  "overrides": {
+    "image-size": "2.0.3",
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
+  },
+  "copyright": "Copyright © 2026 AI SHERPA"
+}

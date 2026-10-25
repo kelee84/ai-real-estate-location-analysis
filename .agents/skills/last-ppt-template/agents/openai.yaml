@@ -1,0 +1,7 @@
+interface:
+  display_name: "마지막 PPT 기본 템플릿"
+  short_description: "승인된 마지막 PPT 서식을 기본 템플릿으로 사용"
+  default_prompt: "Use $last-ppt-template for this PowerPoint request unless I provide another template."
+
+policy:
+  allow_implicit_invocation: true

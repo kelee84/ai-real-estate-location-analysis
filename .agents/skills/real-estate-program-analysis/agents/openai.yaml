@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI SHERPA 매물 분석"
+  short_description: "부동산 도우미와 같은 계산·평가·보고서 기준으로 매물을 분석합니다"
+  default_prompt: "$real-estate-program-analysis를 적용해 부동산 도우미와 같은 기준으로 이 매물의 고객용 분석 보고서를 만들어 주세요."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "문서를 Markdown으로 읽기"
+  short_description: "텍스트 중심 문서를 Markdown으로 읽고 시각 정보 누락을 확인합니다"
+  default_prompt: "$markitdown-document-reader를 사용해 이 문서를 Markdown으로 변환하고 필요한 내용을 읽어줘."
+policy:
+  allow_implicit_invocation: true

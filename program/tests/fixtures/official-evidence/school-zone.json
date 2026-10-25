@@ -1,0 +1,152 @@
+{
+  "displayFieldName": "HAKGUDO_NAME",
+  "fieldAliases": {
+    "OBJECTID": "OBJECTID",
+    "HAKGUDO_ID": "HAKGUDO_ID",
+    "HAKGUDO_NAME": "HAKGUDO_NAME",
+    "HAKGUDO_CLASS": "HAKGUDO_CLASS",
+    "EDU_CD": "EDU_CD",
+    "EDU_NM": "EDU_NM",
+    "PARENT_ID": "PARENT_ID",
+    "PARENT_NM": "PARENT_NM",
+    "SD_CD": "SD_CD",
+    "SGG_CD": "SGG_CD",
+    "CREATE_ID": "CREATE_ID",
+    "CREATE_DATE": "CREATE_DATE",
+    "UPDATE_ID": "UPDATE_ID",
+    "UPDATE_DATE": "UPDATE_DATE",
+    "REMARK": "REMARK",
+    "ACPTNC_SE": "ACPTNC_SE",
+    "SHAPE.AREA": "SHAPE.AREA",
+    "SHAPE.LEN": "SHAPE.LEN"
+  },
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeOID",
+      "alias": "OBJECTID"
+    },
+    {
+      "name": "HAKGUDO_ID",
+      "type": "esriFieldTypeString",
+      "alias": "HAKGUDO_ID",
+      "length": 6
+    },
+    {
+      "name": "HAKGUDO_NAME",
+      "type": "esriFieldTypeString",
+      "alias": "HAKGUDO_NAME",
+      "length": 2000
+    },
+    {
+      "name": "HAKGUDO_CLASS",
+      "type": "esriFieldTypeString",
+      "alias": "HAKGUDO_CLASS",
+      "length": 1
+    },
+    {
+      "name": "EDU_CD",
+      "type": "esriFieldTypeString",
+      "alias": "EDU_CD",
+      "length": 7
+    },
+    {
+      "name": "EDU_NM",
+      "type": "esriFieldTypeString",
+      "alias": "EDU_NM",
+      "length": 60
+    },
+    {
+      "name": "PARENT_ID",
+      "type": "esriFieldTypeString",
+      "alias": "PARENT_ID",
+      "length": 7
+    },
+    {
+      "name": "PARENT_NM",
+      "type": "esriFieldTypeString",
+      "alias": "PARENT_NM",
+      "length": 60
+    },
+    {
+      "name": "SD_CD",
+      "type": "esriFieldTypeString",
+      "alias": "SD_CD",
+      "length": 2
+    },
+    {
+      "name": "SGG_CD",
+      "type": "esriFieldTypeString",
+      "alias": "SGG_CD",
+      "length": 3
+    },
+    {
+      "name": "CREATE_ID",
+      "type": "esriFieldTypeString",
+      "alias": "CREATE_ID",
+      "length": 50
+    },
+    {
+      "name": "CREATE_DATE",
+      "type": "esriFieldTypeString",
+      "alias": "CREATE_DATE",
+      "length": 8
+    },
+    {
+      "name": "UPDATE_ID",
+      "type": "esriFieldTypeString",
+      "alias": "UPDATE_ID",
+      "length": 50
+    },
+    {
+      "name": "UPDATE_DATE",
+      "type": "esriFieldTypeString",
+      "alias": "UPDATE_DATE",
+      "length": 8
+    },
+    {
+      "name": "REMARK",
+      "type": "esriFieldTypeString",
+      "alias": "REMARK",
+      "length": 2000
+    },
+    {
+      "name": "ACPTNC_SE",
+      "type": "esriFieldTypeString",
+      "alias": "ACPTNC_SE",
+      "length": 1
+    },
+    {
+      "name": "SHAPE.AREA",
+      "type": "esriFieldTypeDouble",
+      "alias": "SHAPE.AREA"
+    },
+    {
+      "name": "SHAPE.LEN",
+      "type": "esriFieldTypeDouble",
+      "alias": "SHAPE.LEN"
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "OBJECTID": 6719,
+        "HAKGUDO_ID": "101213",
+        "HAKGUDO_NAME": "인천연송초통학구역",
+        "HAKGUDO_CLASS": "0",
+        "EDU_CD": "27",
+        "EDU_NM": "인천광역시동부교육지원청",
+        "PARENT_ID": "24",
+        "PARENT_NM": "인천광역시교육청",
+        "SD_CD": "28",
+        "SGG_CD": "185",
+        "CREATE_DATE": "20160812",
+        "UPDATE_DATE": "20260301",
+        "REMARK": null,
+        "ACPTNC_SE": "1",
+        "SHAPE.AREA": 639242.464606055,
+        "SHAPE.LEN": 8154.958606356431
+      }
+    }
+  ]
+}

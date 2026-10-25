@@ -1,0 +1,4 @@
+# 이 프로젝트에서 사용하는 입지톡 원격 MCP 연결입니다.
+[mcp_servers.ipzitalk]
+url = "https://ipji-talk.com/mcp"
+enabled = true

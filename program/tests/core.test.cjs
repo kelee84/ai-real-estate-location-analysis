@@ -1,0 +1,36 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const c=require('../src/core.cjs');
+test('달력 기준 6개월과 월말·윤년 처리',()=>{
+  assert.deepEqual(c.sixMonthWindow('2026-10-15'),{start:'2026-04-15',end:'2026-10-15'});
+  assert.equal(c.sixMonthWindow('2024-08-31').start,'2024-02-29');assert.equal(c.sixMonthWindow('2025-08-31').start,'2025-02-28');assert.equal(c.sixMonthWindow('2026-03-31').start,'2025-09-30');assert.throws(()=>c.sixMonthWindow('2026-02-30'));
+});
+test('한국 날짜, 숫자, 누락과 0의 구분',()=>{assert.equal(c.todayKst(new Date('2026-10-14T16:00:00Z')),'2026-10-15');assert.equal(c.amount('1,000'),1000);assert.equal(c.amount(''),null);assert.equal(c.amount('0'),0);assert.equal(c.amount('-10'),null);assert.equal(c.amount('abc'),null);});
+function tx(id,date,kind='trade',overrides={}){return {id,date,kind,building:'리센츠',location:'서울특별시 송파구 잠실동',area:84.99,areaBasis:'전용면적',price:100000,deposit:10000,monthly:0,cancelled:false,...overrides};}
+const input={target:'서울 송파구 잠실동 리센츠',building:'',asset:'apartment',asOf:'2026-10-15',area:84.99,types:['trade','jeonse','monthly']};
+test('기간 경계 포함, 기준일 이후·기간 밖·해제·중복 제외',()=>{const rows=[tx('a','2026-04-15'),tx('b','2026-10-15','trade',{price:200000}),tx('c','2026-04-14'),tx('d','2026-10-16'),tx('e','2026-06-01','trade',{cancelled:true}),tx('a','2026-04-15')];const out=c.aggregate(rows,input);assert.equal(out.rows.length,2);assert.equal(out.summaries[0].price,150000);assert.equal(out.excluded.outside,2);assert.equal(out.excluded.cancelled,1);assert.equal(out.excluded.duplicate,1);});
+test('월별 평균이 아니라 개별 계약 평균',()=>{const out=c.aggregate([tx('1','2026-05-01'),tx('2','2026-05-02'),tx('3','2026-06-01','trade',{price:400000})],input);assert.equal(out.summaries[0].price,200000);});
+test('동명 부분 일치·다른 면적 섞지 않음',()=>{const out=c.aggregate([tx('1','2026-05-01','trade',{building:'리센츠2'}),tx('2','2026-05-01','trade',{area:59}),tx('3','2026-05-01')],input);assert.equal(out.rows.length,1);assert.equal(out.excluded.condition,2);});
+test('입력한 동과 다른 동의 동일 건물명을 섞지 않음',()=>{const out=c.aggregate([tx('1','2026-05-01','trade',{location:'서울특별시 송파구 신천동'}),tx('2','2026-05-01')],input);assert.equal(out.rows.length,1);assert.equal(out.excluded.condition,1);});
+test('면적 미지정은 면적별로 분리',()=>{const out=c.aggregate([tx('1','2026-05-01'),tx('2','2026-05-01','trade',{area:59})],{...input,area:null});assert.equal(out.summaries.length,2);assert.deepEqual(out.summaries.map(g=>g.area),[84.99,59]);});
+test('84 타입은 소수점 전체를 포함하며 83.99·85는 제외',()=>{
+  const i=c.normalizeInput({...input,area:'84 타입'}),areas=[83.99,84,84.2,84.81,84.9999,85];
+  const out=c.aggregate(areas.map((area,n)=>tx(String(n),'2026-05-01','trade',{area,price:100000+n*10000})),i);
+  assert.deepEqual(out.rows.map(t=>t.area),[84,84.2,84.81,84.9999]);assert.equal(out.summaries.length,1);assert.equal(out.summaries[0].n,4);assert.equal(out.summaries[0].price,125000);assert.deepEqual(out.summaries[0].actualAreas,[84,84.2,84.81,84.9999]);assert.match(out.condition,/84\.00㎡ 이상 85\.00㎡ 미만/);assert.ok(!out.condition.includes('±'));
+});
+test('소수 면적은 정확 일치, 84.00 명시 및 재분석 시 모드 유지',()=>{
+  const exact=c.normalizeInput({...input,area:'84.81'}),zero=c.normalizeInput({...input,area:'84.00'});assert.equal(exact.areaMode,'exact');assert.equal(zero.areaMode,'exact');assert.equal(c.normalizeInput(zero).areaMode,'exact');
+  const out=c.aggregate([84.2,84.8,84.81,84.82,85].map((area,n)=>tx(String(n),'2026-05-01','trade',{area})),exact);assert.deepEqual(out.rows.map(t=>t.area),[84.81]);assert.equal(c.normalizeInput({...input,area:'84㎡'}).areaMode,'type');
+});
+test('면적 미입력은 소수 셋째 자리 차이도 보존',()=>{const out=c.aggregate([tx('1','2026-05-01','trade',{area:84.811}),tx('2','2026-05-01','trade',{area:84.812})],{...input,area:null});assert.equal(out.summaries.length,2);});
+test('출처 목록은 입지톡만 숨기고 검증용 원출처를 보존',()=>{const r={sources:[{id:'a',title:'공식 기관',url:'https://rt.molit.go.kr/'},{id:'b',title:'시설',url:'https://mcp.ipji-talk.com/maps'},{id:'c',title:'입지톡 단지정보',url:'https://example.com'},{id:'d',title:'제삼자',url:'https://ipji-talk.com.other.example/'}]};assert.deepEqual(c.displaySources(r).map(s=>s.id),['a','d']);assert.equal(r.sources.length,4);});
+test('월세는 보증금 구간별 평균 임대료와 보증금 제공',()=>{const out=c.aggregate([tx('1','2026-05-01','monthly',{deposit:500,monthly:180}),tx('2','2026-05-01','monthly',{deposit:800,monthly:220}),tx('3','2026-05-01','monthly',{deposit:20000,monthly:100})],input);assert.equal(out.summaries.length,2);assert.equal(out.summaries[0].monthly,200);assert.equal(out.summaries[0].deposit,650);});
+test('고액 월세 보증금은 큰 금액 차이를 하나의 상위 구간으로 합치지 않음',()=>{const out=c.aggregate([tx('1','2026-05-01','monthly',{deposit:20000,monthly:180}),tx('2','2026-05-01','monthly',{deposit:80000,monthly:100}),tx('3','2026-05-01','monthly',{deposit:100000,monthly:70}),tx('4','2026-05-01','monthly',{deposit:200000,monthly:30})],input);assert.equal(out.summaries.length,4);assert.equal(out.summaries[3].deposit,200000);});
+test('거래 유형 지정, 거래 없음은 0원으로 채우지 않음',()=>{const out=c.aggregate([tx('1','2026-05-01')],{...input,types:['jeonse']});assert.equal(out.summaries.length,0);assert.deepEqual(out.unavailable.map(g=>g.kind),['jeonse']);assert.equal(c.money(null),'산출 불가');});
+test('월 임대료 누락은 전세로 분류하지 않음',()=>{const row={'계약년월':'202605','계약일':'1','전용면적(㎡)':'84.99','단지명':'리센츠','보증금(만원)':'10000'};assert.equal(c.rowToContract(row,'rent').kind,'unknown');row['월세금(만원)']='0';assert.equal(c.rowToContract(row,'rent').kind,'jeonse');row['월세금(만원)']='100';assert.equal(c.rowToContract(row,'rent').kind,'monthly');});
+function quota(used,resetsAt=100,secondary=null){return {rateLimitsByLimitId:{codex:{primary:{usedPercent:used,windowDurationMins:10080,resetsAt},secondary}}};}
+test('사용량은 낮은 잔여율, 누락은 unknown',()=>{assert.equal(c.quotaState(quota(30,100,{usedPercent:95,resetsAt:200})).remaining,5);assert.equal(c.quotaState({}).remaining,null);});
+test('사용률 0%도 상단 표시 자료에 포함하고 한도 밖 숫자는 제한',()=>{const q=c.quotaState(quota(35,100,{usedPercent:0,resetsAt:200,windowDurationMins:300}));assert.equal(q.windows[0].label,'주간');assert.equal(q.windows[0].usedPercent,35);assert.equal(q.windows[1].remaining,100);assert.equal(q.windows[1].label,'5시간');assert.equal(c.quotaState(quota(105)).remaining,0);assert.equal(c.quotaState(quota(-2)).remaining,100);});
+test('월세만이라는 명시 요청을 금액 산출에 적용',()=>{const i=c.normalizeInput({target:'서울 송파구 리센츠',request:'월세만 분석해 주세요.',types:['trade','jeonse','monthly']});assert.deepEqual(i.types,['monthly']);});
+test('근거 없는 점수는 50점으로 채우지 않고 보류, 6행 유지',()=>{const {report,issues}=c.validateReport({title:'제목',conclusion:'검토',sources:[{id:'s',url:'https://example.com'}],scores:[{name:'교통 환경',score:80,method:'거리 구간별 배점',reason:'역 접근성',sourceIds:['s']},{name:'교육 환경',score:90,reason:'추측',method:'',sourceIds:[]}]});assert.equal(report.scores.length,6);assert.equal(report.scores[0].score,80);assert.equal(report.scores[1].score,null);assert.equal(issues.length,1);});
+test('입력 오류와 HTML·파일명 이스케이프',()=>{assert.throws(()=>c.normalizeInput({target:'a'}));assert.throws(()=>c.normalizeInput({target:'서울 아파트',area:'abc'}));assert.throws(()=>c.normalizeInput({target:'서울 아파트',types:[]}));assert.equal(c.escapeHtml('<img onerror="x">'),'&lt;img onerror=&quot;x&quot;&gt;');assert.ok(!/[<>\/\\]/.test(c.safeName('../<대상>')));});
