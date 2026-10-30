@@ -3,18 +3,47 @@ const norm=s=>String(s??'').normalize('NFKC').replace(/[\s()（）·-]/g,'').toL
 const BLOCK=/D?\s*(\d+)\s*[-－–]\s*(\d+)\s*(?:BLOCK|BL|블럭|블록)(?![a-z0-9])/gi;
 const blocks=s=>[...String(s??'').normalize('NFKC').matchAll(BLOCK)].map(m=>Number(m[1])+'_'+Number(m[2]));
 const nameKey=s=>norm(String(s??'').normalize('NFKC').replace(BLOCK,(_m,a,b)=>'block'+Number(a)+'_'+Number(b)));
-const phases=s=>[...norm(s).matchAll(/\d+(?:차|단지)/g)].map(m=>m[0]);
-function identityConflict(a,b){return [phases,blocks].some(pick=>{const x=[...new Set(pick(a))].sort(),y=[...new Set(pick(b))].sort();return x.length&&y.length&&JSON.stringify(x)!==JSON.stringify(y);});}
+const phases=s=>[...norm(s).matchAll(/(\d+)(차|단지)/g)].map(m=>Number(m[1])+m[2]);
+function confirmationNameParts(value){
+ const name=nameKey(value).replace(/(?:아파트|apt)$/,'').replace(/제(?=\d+(?:차|단지))/g,''),phase=phases(name);
+ return {name,phase,stem:name.replace(/\d+(?:차|단지)/g,''),terminal:phase.length?null:name.match(/^(.*\D)(\d+)$/)};
+}
+function identityConflict(a,b){
+ if([phases,blocks].some(pick=>{const x=[...new Set(pick(a))].sort(),y=[...new Set(pick(b))].sort();return x.length&&y.length&&JSON.stringify(x)!==JSON.stringify(y);}))return true;
+ // Official names may omit 차/단지. A matching address must not turn 3차
+ // into the register's terminal 2, including the coordinate fallback.
+ const x=confirmationNameParts(a),y=confirmationNameParts(b);
+ for(const [explicit,implicit]of [[x,y],[y,x]])if(explicit.phase.length===1&&implicit.terminal&&compatibleName(explicit.stem,implicit.terminal[1])&&Number(explicit.phase[0].match(/^\d+/)[0])!==Number(implicit.terminal[2]))return true;
+ return false;
+}
+// Formatting aliases propose an official candidate for confirmation; they do
+// not relax the general name matcher used to filter transaction contracts.
+function confirmationNameMatch(a,b){
+ if(identityConflict(a,b))return false;
+ const x=confirmationNameParts(a),y=confirmationNameParts(b);
+ if(compatibleName(x.name,y.name))return true;
+ if(x.phase.length===1&&y.phase.length===1)return x.phase[0]===y.phase[0]&&compatibleName(x.stem,y.stem);
+ for(const [explicit,implicit]of [[x,y],[y,x]])if(explicit.phase.length===1&&implicit.terminal&&Number(explicit.phase[0].match(/^\d+/)[0])===Number(implicit.terminal[2])&&compatibleName(explicit.stem,implicit.terminal[1]))return true;
+ return false;
+}
 function roadKey(s){const m=String(s||'').normalize('NFKC').match(/(?:^|\s)([가-힣a-zA-Z0-9·.]+(?:대로|로|길))\s*(\d+(?:-\d+)?)(?=\s|$|[,（(])/);return m?norm(m[1])+' '+m[2].split('-').map(n=>String(Number(n))).join('-'):'';}
 const PROVINCE=/^(?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주|.+(?:특별시|광역시|특별자치시|특별자치도|도))$/;
+const {failure,jsonRequest,retryRead}=require('./search-errors.cjs');
+function addressParts(target){
+ const text=String(target||'').normalize('NFKC').replace(/[(),]/g,' ').trim().replace(/\s+/g,' '),parts=text.split(' ');
+ const province=PROVINCE.test(parts[0])||/^(?:서울|부산|대구|인천|광주|대전|울산|세종)시$/.test(parts[0])?parts.shift():'';
+ const regions=[];while(parts.length&&/^[가-힣0-9]+(?:시|군|구|동|읍|면|리|가)$/.test(parts[0]))regions.push(parts.shift());
+ const town=[...regions].reverse().find(s=>/(?:동|읍|면|리|가)$/.test(s))||'';
+ let lot='',road='';
+ if(town&&/^(?:산)?\d+(?:-\d+)?(?:번지)?$/.test(parts[0]||''))lot=lotKey(parts.shift());
+ else if(town&&parts[0]==='산'&&/^\d+(?:-\d+)?$/.test(parts[1]||'')){parts.shift();lot='산'+lotKey(parts.shift());}
+ else {const m=parts.join(' ').match(/^([가-힣a-zA-Z0-9·.]+(?:대로|로|길))\s*(\d+(?:-\d+)?)(?=\s|$)/);if(m){road=roadKey(m[0]);parts.splice(0,parts.join(' ').slice(0,m[0].length).trim().split(' ').length);}}
+ return {province,regions,town,lot,road,name:parts.join(' ')};
+}
 function requestedName(input){
   assertPropertyInput(input);
   if(String(input.building||'').trim())return String(input.building).trim();
-  const parts=String(input.target||'').replace(/[(),]/g,' ').trim().split(/\s+/).filter(Boolean);
-  if(PROVINCE.test(parts[0]||''))parts.shift();
-  while(parts.length&&/^[가-힣0-9]+(?:시|군|구|동|읍|면|리)$/.test(parts[0]))parts.shift();
-  if(!parts.length||parts.every(s=>/^(?:산)?\d+(?:-\d+)?(?:번지)?$/.test(s))||/^(?:.+(?:로|길))\s*\d+(?:-\d+)?$/.test(parts.join(' ')))return '';
-  return parts.join(' ');
+  return addressParts(input.target).name;
 }
 function assertPropertyInput(input){
   const target=norm(input.target),building=norm(input.building);
@@ -78,29 +107,34 @@ function selectProperties(properties,query){
 async function resolveProperty(client,input,signal,{region:knownRegion,expected}={}){
   const kind={apartment:'A',villa:'B',officetel:'D'}[input.asset];
   if(!kind)throw new Error('이 매물 종류는 공식 단지 목록에서 건물을 특정할 수 없습니다.');
-  const query=requestedName(input);if(!query)throw new Error('단지·건물명을 주소와 함께 입력해 주세요.');
-  const region=knownRegion||await client.resolve(input.target,signal);
-  const townData=JSON.parse((await client.request('/cmm/emdList.do',{code:region.code},signal)).toString());
-  if(!Array.isArray(townData.emdList))throw new Error('법정동 목록을 확인하지 못했습니다.');
-  const neighborhoods=[...input.target.matchAll(/(?:^|\s)([가-힣0-9]+(?:동|리|읍|면))(?=\s|$)/g)].map(m=>norm(m[1]));
+  const query=requestedName(input),address=addressParts(input.target);
+  if(!query&&!address.lot&&!address.road)throw failure('PROPERTY_INPUT_REQUIRED','단지명 또는 시·군·구를 포함한 정확한 지번·도로명주소를 입력해 주세요.','input');
+  const region=knownRegion||await retryRead(()=>client.resolve(input.target,signal),signal);
+  const townData=await jsonRequest(client,'/cmm/emdList.do',{code:region.code},signal);
+  if(!Array.isArray(townData?.emdList))throw failure('SEARCH_RESPONSE_INVALID','법정동 목록을 확인하지 못했습니다. 다시 검색해 주세요.','region');
+  // 읍·면·리가 함께 있는 주소는 마지막 법정동 단위로 한정한다.
+  const neighborhoods=address.town?[norm(address.town)]:[];
   const towns=townData.emdList.filter(t=>!neighborhoods.length||neighborhoods.includes(norm(t.codeNm)));
-  if(!towns.length)throw new Error('입력한 읍면동을 확인하지 못했습니다. 주소를 확인해 주세요.');
+  if(!towns.length)throw failure('REGION_NOT_FOUND','입력한 읍면동을 확인하지 못했습니다. 주소를 확인해 주세요.','region');
   const year=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date());
   const allProperties=new Map();let completeNeighborhood=false;
-  const choose=properties=>expected?.officialCode?properties.filter(p=>String(p.aprpnHsmpCode)===String(expected.officialCode)):selectProperties(properties,query);
+  const atAddress=p=>(!address.lot||lotKey(p.mnnm)===address.lot)&&(!address.road||roadKey(p.roadNm)===address.road);
+  const choose=properties=>(expected?.officialCode?properties.filter(p=>String(p.aprpnHsmpCode)===String(expected.officialCode)):query?selectProperties(properties,query):properties).filter(atAddress);
   async function search(keyword){
     if(!keyword&&completeNeighborhood)return choose([...allProperties.values()]);
     const matches=[];
     for(let i=0;i<towns.length;i+=4){
       const pages=await Promise.all(towns.slice(i,i+4).map(async town=>{
-        const found=new Map();
+        const found=new Map();let expectedTotal;
         for(let page=1;page<=50;page++){
-          const result=JSON.parse((await client.request('/pt/gis/ptDanjiList.do',{srhThingSecd:kind,srhYear:year,srhLadSecd:'1',srhLedCd:String(town.code),srhBldgNm:keyword,pageIndex:String(page),mobileAt:''},signal)).toString());
-          const total=Number(result.totCnt);
-          if(!Array.isArray(result.danjiList)||!Number.isInteger(total)||total<0)throw new Error('공식 단지 검색 결과를 확인하지 못했습니다.');
+          const result=await jsonRequest(client,'/pt/gis/ptDanjiList.do',{srhThingSecd:kind,srhYear:year,srhLadSecd:'1',srhLedCd:String(town.code),srhBldgNm:keyword,pageIndex:String(page),mobileAt:''},signal);
+          const total=Number(result?.totCnt);
+          if(!Array.isArray(result?.danjiList)||!['number','string'].includes(typeof result.totCnt)||!/^\d+$/.test(String(result.totCnt))||!Number.isInteger(total)||total<0||result.danjiList.some(p=>!p||!String(p.aprpnHsmpCode||'').trim()||!p.aprpnHsmpNm))throw failure('SEARCH_RESPONSE_INVALID','공식 단지 검색 결과를 확인하지 못했습니다. 다시 검색해 주세요.','property');
+          if(expectedTotal!==undefined&&expectedTotal!==total)throw failure('SEARCH_RESPONSE_INCOMPLETE','조회 중 공식 단지 목록의 건수가 바뀌었습니다. 다시 검색해 주세요.','property');expectedTotal=total;
           const before=found.size;for(const p of result.danjiList)found.set(String(p.aprpnHsmpCode),{...p,townName:town.codeNm});
-          if(found.size>=total)break;
-          if(!result.danjiList.length||before===found.size||page===50)throw new Error('공식 단지 목록을 끝까지 확인하지 못했습니다. 읍면동을 추가하거나 다시 검색해 주세요.');
+          if(found.size>total)throw failure('SEARCH_RESPONSE_INCOMPLETE','공식 단지 목록의 건수가 응답과 일치하지 않습니다. 다시 검색해 주세요.','property');
+          if(found.size===total)break;
+          if(!result.danjiList.length||before===found.size||page===50)throw failure('SEARCH_RESPONSE_INCOMPLETE','공식 단지 목록을 끝까지 확인하지 못했습니다. 읍면동을 추가하거나 다시 검색해 주세요.','property');
         }
         return [...found.values()];
       }));matches.push(...pages.flat());
@@ -109,10 +143,20 @@ async function resolveProperty(client,input,signal,{region:knownRegion,expected}
     if(!keyword)completeNeighborhood=true;
     return choose(matches);
   }
-  let matches=await search(norm(query.replace(BLOCK,'')));
-  // 공식 명칭의 지역·브랜드 접두어나 띄어쓰기가 다르면 해당 읍면동 목록에서 다시 대조한다.
-  if(!matches.length)matches=await search('');
-  let addressMatched=false,confirmation='';
+  let matches=[],addressMatched=false,confirmation='';
+  const alias=confirmationNameParts(query);
+  // Try punctuation/suffix/phase variants within the resolved region before
+  // fetching every neighborhood page or repeating an external complex lookup.
+  // Even one alias candidate needs confirmation of its official name/address.
+  const keywords=[norm(query.replace(BLOCK,'')),alias.name,...(alias.phase.length===1&&alias.stem.length>=3?[alias.stem]:[]),''];
+  for(const keyword of new Set(keywords)){
+    matches=await search(keyword);
+    if(!matches.length&&!expected&&query){
+      matches=[...allProperties.values()].filter(p=>atAddress(p)&&confirmationNameMatch(query,p.aprpnHsmpNm));
+      if(matches.length)confirmation='입력한 명칭과 공식 자료의 표기가 다릅니다. 검색한 지역의 공식 단지 이름과 주소를 확인해 주세요.';
+    }
+    if(matches.length)break;
+  }
   if(expected){
     const lot=String(expected.address||'').normalize('NFKC').match(/(?:동|읍|면|리)\s+((?:산\s*)?\d+(?:-\d+)?)(?=\s|$|번지)/)?.[1];
     const lotKey=s=>String(s||'').replace(/번지|\s/g,'').replace(/\d+/g,n=>String(Number(n)));
@@ -129,16 +173,24 @@ async function resolveProperty(client,input,signal,{region:knownRegion,expected}
     // K-apt의 이전 지번이나 대단지 대표 좌표 차이는 같은 도로명·건물번호와
     // 단지명이 대조된 공식 후보로 확인받는다. 가까운 다른 단지로 자동 연결하지 않는다.
     const road=roadKey(expected.road);
+    if(!matches.length&&!expected.officialCode&&lot&&road){
+      // Without coordinates, formatting aliases still require BOTH exact lot
+      // and full road number, followed by official name/code confirmation.
+      const expectedTown=addressParts(expected.address).town;
+      await search('');
+      matches=[...allProperties.values()].filter(p=>expectedTown&&norm(p.townName)===norm(expectedTown)&&consistent(p)&&lotKey(p.mnnm)===lotKey(lot)&&roadKey(p.roadNm)===road&&confirmationNameMatch(query,p.aprpnHsmpNm));
+      if(matches.length)confirmation='검색 자료와 공식 자료의 명칭이 다릅니다. 지번·도로명주소가 일치하는 공식 단지의 이름과 주소를 확인해 주세요.';
+    }
     if(!matches.length&&!expected.officialCode&&road){
       await search('');
       matches=[...allProperties.values()].filter(p=>roadKey(p.roadNm)===road&&compatibleName(query,p.aprpnHsmpNm)&&!identityConflict(query,p.aprpnHsmpNm));
       if(matches.length)confirmation='검색 자료와 공식 자료의 지번·단지 구분이 달라 현재 공식 이름과 주소를 확인해 주세요.';
     }
   }
-  if(matches.length!==1||confirmation){
+  if(matches.length!==1||confirmation||!query&&!expected?.officialCode){
     if(matches.length){const error=new Error((confirmation||'단지 후보가 여러 곳입니다. 목록에서 분석할 단지를 선택해 주세요: ')+matches.slice(0,6).map(p=>`${p.aprpnHsmpNm} (${p.townName} ${p.mnnm||''})`).join(' / '));error.code='PROPERTY_AMBIGUOUS';error.properties=matches;error.region=region;error.reason=confirmation;throw error;}
-    throw new Error('입력한 지역의 공식 단지 목록에서 일치하는 단지를 찾지 못했습니다. 단지명·차수·읍면동을 확인해 주세요.');
+    throw failure(expected?'PROPERTY_IDENTITY_MISMATCH':'PROPERTY_NOT_FOUND','입력한 지역의 공식 단지 목록에서 일치하는 단지를 찾지 못했습니다. 단지명·차수·읍면동을 확인해 주세요.','property');
   }
   const property=matches[0];return {region,property,identity:{requested:query,building:property.aprpnHsmpNm,code:String(property.aprpnHsmpCode),regionCode:region.code,province:region.province?.name||'',region:region.name||'',town:property.townName,lot:property.mnnm,road:property.roadNm||'',...(Number.isFinite(Number(property.la))&&Number.isFinite(Number(property.lo))?{lat:Number(property.la),lng:Number(property.lo)}:{}),match:expected?.officialCode?'selected-code':addressMatched?'address-coordinate':norm(query)===norm(property.aprpnHsmpNm)?'exact':'unique-name',source:'https://rt.molit.go.kr/pt/gis/gis.do',checkedAt:new Date().toISOString()}};
 }
-module.exports={requestedName,compatibleName,matchesKaptIdentity,selectProperties,resolveProperty,assertPropertyInput,nameKey,blocks,roadKey,identityConflict};
+module.exports={requestedName,compatibleName,matchesKaptIdentity,selectProperties,resolveProperty,assertPropertyInput,nameKey,blocks,roadKey,identityConflict,addressParts};

@@ -149,17 +149,39 @@ class AnalysisService {
     try{return await this.store.update(id,report=>consultation.updateConsultation(report,payload),{afterSave:false});}
     finally{if(this.active===activity)this.active=null;}
   }
-  async searchTypes(raw){
-    if(this.active)throw new Error('분석이 끝난 뒤 타입을 검색해 주세요.');
+  searchTask(operation,input,work){
+    const errors=require('./search-errors.cjs'),key=JSON.stringify([operation,...['target','asset','building','asOf','forceRefresh','searchToken','candidateId'].map(k=>input[k]??null)]),current=this.active;
+    if(current?.kind==='property-search'){
+      if(current.key===key&&!current.controller.signal.aborted){current.requestIds.add(input.searchRequestId);return current.promise;}
+      current.controller.abort();
+    }else if(current)return Promise.reject(errors.failure('SEARCH_BUSY','진행 중인 작업이 끝난 뒤 단지를 검색해 주세요.','input'));
+    const task={kind:'property-search',key,controller:new AbortController(),requestIds:new Set([input.searchRequestId])};this.active=task;
+    task.promise=Promise.resolve().then(()=>work(task.controller.signal)).catch(async error=>{
+      this.lastSearchDiagnostic={...errors.diagnostic(error,operation),checkedAt:new Date().toISOString()};
+      if(this.userData&&!task.controller.signal.aborted)await fs.writeFile(path.join(this.userData,'search-diagnostic.json'),JSON.stringify(this.lastSearchDiagnostic)).catch(()=>{});
+      throw errors.present(error,task.controller.signal);
+    }).finally(()=>{if(this.active===task)this.active=null;});return task.promise;
+  }
+  cancelSearch(requestId){
+    const task=this.active;if(task?.kind!=='property-search'||!task.requestIds.has(requestId))return false;
+    task.requestIds.delete(requestId);if(!task.requestIds.size){task.controller.abort();this.active=null;}return true;
+  }
+  searchTypes(raw){return this.searchTask('types',raw,signal=>this.searchTypesWithSignal(raw,signal));}
+  async searchTypesWithSignal(raw,signal){
     require('./property-identity.cjs').assertPropertyInput(raw);
     const search=require('./property-search.cjs');
-    if(!search.hasRegion(raw.target))return this.searchProperties(raw);
-    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw);}catch(error){if(error.code==='PROPERTY_AMBIGUOUS'&&error.region?.province?.name)return this.rememberPropertySearch(search.officialCandidates(raw,error));if(['PROPERTY_AMBIGUOUS','REGION_REQUIRED','REGION_AMBIGUOUS'].includes(error.code)&&(!raw.asset||raw.asset==='apartment'))return this.searchProperties(raw);throw error;}
+    // With a region, first resolve the user's address against the official
+    // register. A cached alias must not add an extra candidate-selection step.
+    // Name-only searches and official misses still reuse saved candidates below.
+    if(!search.hasRegion(raw.target))return this.searchPropertiesWithSignal(raw,signal);
+    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw,signal);}catch(error){require('./search-errors.cjs').cancelled(signal);if(error.code==='PROPERTY_AMBIGUOUS'&&error.region?.province?.name)return this.rememberPropertySearch(search.officialCandidates(raw,error));if(['PROPERTY_AMBIGUOUS','PROPERTY_NOT_FOUND','REGION_REQUIRED','REGION_AMBIGUOUS'].includes(error.code)&&(!raw.asset||raw.asset==='apartment'))return this.searchPropertiesWithSignal(raw,signal);throw error;}
+    require('./search-errors.cjs').cancelled(signal);
     return this.rememberCatalog(catalog);
   }
-  async searchProperties(raw){
-    if(this.active)throw new Error('분석이 끝난 뒤 단지를 검색해 주세요.');
-    const before=this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0,result=await require('./saved-property-search.cjs').find(this.store,raw,{forceRefresh:!!raw.forceRefresh})||await require('./property-search.cjs').search(this.bridge,raw,{client:this.data,naverStore:this.naverStore,forceRefresh:!!raw.forceRefresh});
+  searchProperties(raw){return this.searchTask('properties',raw,signal=>this.searchPropertiesWithSignal(raw,signal));}
+  async searchPropertiesWithSignal(raw,signal){
+    const before=this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0,result=await require('./saved-property-search.cjs').find(this.store,raw,{forceRefresh:!!raw.forceRefresh,signal})||await require('./property-search.cjs').search(this.bridge,raw,{client:this.data,naverStore:this.naverStore,forceRefresh:!!raw.forceRefresh,signal});
+    require('./search-errors.cjs').cancelled(signal);
     result.ipzitalkPreflightCalls=Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before);
     return this.rememberPropertySearch(result);
   }
@@ -168,12 +190,13 @@ class AnalysisService {
     for(const [key,value]of this.propertySearches)if(Date.now()-value.time>30*60*1000)this.propertySearches.delete(key);
     this.propertySearches.set(token,{...result,time:Date.now()});return {kind:'candidates',searchToken:token,candidates:result.candidates.map(({id,name,address,road})=>({id,name,address,road})),checkedAt:result.checkedAt,sourceName:result.sourceName,reason:result.reason||''};
   }
-  async selectProperty({searchToken,candidateId}){
-    if(this.active)throw new Error('분석이 끝난 뒤 단지를 선택해 주세요.');
+  selectProperty(input){return this.searchTask('select',input,signal=>this.selectPropertyWithSignal(input,signal));}
+  async selectPropertyWithSignal({searchToken,candidateId},signal){
     const saved=this.propertySearches?.get(searchToken),choice=saved?.candidates.find(p=>p.id===candidateId);if(!saved||!choice||Date.now()-saved.time>30*60*1000)throw new Error('단지 검색이 만료되었거나 후보가 바뀌었습니다. 다시 검색해 주세요.');
     const before=this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0;
-    const search=require('./property-search.cjs'),selected=choice.officialCode?search.officialChoice(saved,choice):await search.resolveChoice(this.bridge,this.data,choice),raw={...saved.input,target:selected.target,building:selected.building};
-    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw,undefined,{region:selected.region,expected:selected.expected});}catch(error){if(error.code==='PROPERTY_AMBIGUOUS')return this.rememberPropertySearch({...search.officialCandidates(raw,error),ipzitalkPreflightCalls:(saved.ipzitalkPreflightCalls||0)+Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before)});throw error;}
+    const search=require('./property-search.cjs'),selected=choice.officialCode?search.officialChoice(saved,choice):await search.resolveChoice(this.bridge,this.data,choice,{signal}),raw={...saved.input,target:selected.target,building:selected.building};
+    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw,signal,{region:selected.region,expected:selected.expected});}catch(error){require('./search-errors.cjs').cancelled(signal);if(error.code==='PROPERTY_AMBIGUOUS')return this.rememberPropertySearch({...search.officialCandidates(raw,error),ipzitalkPreflightCalls:(saved.ipzitalkPreflightCalls||0)+Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before)});throw error;}
+    require('./search-errors.cjs').cancelled(signal);
     catalog.ipzitalkPreflightCalls=(saved.ipzitalkPreflightCalls||0)+Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before);
     return this.rememberCatalog(catalog);
   }

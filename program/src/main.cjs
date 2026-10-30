@@ -1,8 +1,8 @@
 'use strict';
 require('./stdio.cjs').install();
-const {app,BrowserWindow,ipcMain,protocol,net,shell,dialog,session,nativeImage,clipboard,safeStorage}=require('electron');
+const {app,BrowserWindow,ipcMain,protocol,shell,dialog,session,nativeImage,clipboard,safeStorage}=require('electron');
 const fs=require('node:fs/promises'),fsSync=require('node:fs'),path=require('node:path'),os=require('node:os');
-const {pathToFileURL}=require('node:url');const backupEngine=require('./backup.cjs');
+const backupEngine=require('./backup.cjs');
 const {CodexBridge,findBinary}=require('./codex.cjs');const {RtmsClient}=require('./data.cjs');
 const {ReportStore}=require('./store.cjs');const {AnalysisService}=require('./service.cjs');const exportsEngine=require('./report.cjs');
 const {safeName,todayKst}=require('./core.cjs');
@@ -17,14 +17,14 @@ if(smoke)app.setPath('userData',path.join(os.tmpdir(),'re-helper-smoke-'+process
 else if(issuerMode)app.setPath('userData',path.join(app.getPath('appData'),'real-estate-helper-issuer'));
 app.setName('부동산 도우미');
 let win,bridge,service,store,workspace,reportRoot,activation,detailEvidence,exportSummary,exportLocation,lastIssued='';const supportEvents=[];
-if(!issuerMode&&!smoke&&!app.requestSingleInstanceLock())app.quit();
+const hasInstanceLock=issuerMode||smoke||app.requestSingleInstanceLock();
 app.on('second-instance',()=>{if(win){if(win.isMinimized())win.restore();win.focus();}});
 function send(data){if(win&&!win.isDestroyed())win.webContents.send('helper:event',data);}
 function safeHttps(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}}
 const captureMap=require('./map-capture.cjs').createMapCapture({BrowserWindow,nativeImage,onEvent:send});
 function handle(channel,fn){ipcMain.handle('helper:'+channel,async(event,...args)=>{
   if(!trustedMainSender(event,win,mainPage))return {ok:false,error:'이 화면에서 허용되지 않는 요청입니다.'};
-  try{if(!issuerMode&&!['app-info','support','copy-email','activation-status','activate','copy-request'].includes(channel))await activation.require();return {ok:true,data:await fn(...args)};}catch(e){return {ok:false,error:e.message||'작업을 완료하지 못했습니다.'};}
+  try{if(!issuerMode&&!['app-info','support','copy-email','activation-status','activate','copy-request'].includes(channel))await activation.require();return {ok:true,data:await fn(...args)};}catch(e){return {ok:false,error:e.message||'작업을 완료하지 못했습니다.',...(/^(?:SEARCH|TYPE|PROPERTY|REGION)_[A-Z_]+$/.test(e.code||'')?{code:e.code}:{})};}
 });}
 async function exportReport(id,format,forcedPath){
   if(!['html','pdf','docx','xlsx','pptx'].includes(format))throw new Error('지원하지 않는 저장 형식입니다.');
@@ -63,9 +63,7 @@ async function ready(){
     if(u.hostname==='grounding')try{await activation.require();const r=await store.load(u.pathname.slice(1));return new Response(require('./grounding-view.cjs').html(r),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src https: data:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"}});}catch{return new Response('검색 참고 정보를 열 수 없습니다.',{status:404});}
     if(['report','summary'].includes(u.hostname))try{await activation.require();const id=u.pathname.slice(1);const r=await service.presentationReport(id);const renderer=u.hostname==='summary'?require('./customer-summary.cjs'):exportsEngine;return new Response(renderer.html(r,await exportsEngine.mapData(r,store)),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});}catch{return new Response('보고서를 열 수 없습니다.',{status:404});}
     if(u.hostname!=='app')return new Response('Not found',{status:404});
-    const relative=decodeURIComponent(u.pathname).replace(/^\//,''),base=path.resolve(__dirname,'web'),file=path.resolve(base,relative||'index.html');
-    if(!file.startsWith(base+path.sep))return new Response('Not found',{status:404});
-    return net.fetch(pathToFileURL(file).href);
+    return require('./app-files.cjs').readAppFile(request,path.join(__dirname,'web'));
   });
   session.defaultSession.setPermissionRequestHandler((_w,_p,callback)=>callback(false));
   const windowTitle=`${issuerMode?'인증번호 발급기 · ':''}${brand.PRODUCT} · ${brand.NAME} · v${brand.VERSION}`;
@@ -74,6 +72,7 @@ async function ready(){
   win.webContents.setWindowOpenHandler(({url})=>{if(safeHttps(url))shell.openExternal(url);return {action:'deny'};});
   win.webContents.on('will-navigate',(event,url)=>{if(url!==mainPage)event.preventDefault();});
   handle('app-info',()=>brand.info());
+  handle('cancel-search',id=>service.cancelSearch(id));
   handle('support',async kind=>{const url=brand.supportTarget(kind);if(smoke)supportEvents.push(url);else await shell.openExternal(url);return true;});
   handle('copy-email',async()=>{await clipboard.writeText(brand.EMAIL);return true;});
   if(issuerMode){
@@ -123,7 +122,10 @@ async function ready(){
   await win.loadURL('helper://app/index.html');
   if(smoke){try{await require('../tests/electron-smoke.cjs').run({app,win,service,store,exportReport,exportSummary,supportEvents,output:process.env.RE_HELPER_TEST_OUTPUT||(app.isPackaged?path.join(app.getPath('temp'),'re-helper-packaged-test'):path.resolve(__dirname,'../../.build/smoke'))});app.exit(0);}catch(e){console.error(e.stack);app.exit(1);}}
 }
-app.whenReady().then(ready).catch(error=>{if(smoke){console.error(error.stack);app.exit(1);}else dialog.showErrorBox('부동산 도우미를 시작하지 못했습니다.',error.message+'\n설치 파일을 다시 실행해 주세요.');});
+app.whenReady().then(async()=>{
+  if(!hasInstanceLock){dialog.showErrorBox('실행 중인 부동산 도우미를 먼저 종료해 주세요.',`실행하려는 버전: v${brand.VERSION}\n이미 실행 중인 앱이 있어 수정본을 열지 못했습니다. 기존 앱을 완전히 종료한 뒤 다시 실행해 주세요.`);app.quit();return;}
+  await ready();
+}).catch(error=>{if(smoke){console.error(error.stack);app.exit(1);}else dialog.showErrorBox(`부동산 도우미 v${brand.VERSION}를 시작하지 못했습니다.`,error.message+'\n프로그램을 종료한 뒤 다시 실행해 주세요.');});
 app.on('before-quit',()=>bridge?.stop());app.on('window-all-closed',()=>app.quit());
 module.exports={safeHttps};
 

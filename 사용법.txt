@@ -1,6 +1,6 @@
-부동산 도우미 0.6.26 · 처음 사용하기
+부동산 도우미 0.6.30 · 처음 사용하기
 
-1. RealEstateHelper-Setup-0.6.26-x64.exe를 실행합니다.
+1. RealEstateHelper-Setup-0.6.30-x64.exe를 실행합니다.
 2. 바탕화면의 ‘부동산 도우미’를 엽니다.
 3. PC 인증 없이 바로 실행됩니다. 인증번호를 발급받거나 입력할 필요가 없습니다.
 4. 사용 설정에서 GPT·Gemini·Claude 중 하나를 선택합니다. GPT는 본인 ChatGPT 계정으로 로그인합니다. Gemini는 Google AI Studio, Claude는 Anthropic Console에서 발급한 본인 API 키로 연결합니다. 키는 채팅에 보내지 말고 프로그램에 직접 입력하세요.

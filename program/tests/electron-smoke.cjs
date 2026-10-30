@@ -3,6 +3,7 @@ const fs=require('node:fs/promises'),path=require('node:path'),assert=require('n
 const {normalizeInput,aggregate,SCORE_ITEMS,todayKst}=require('../src/core.cjs');
 const brand=require('../src/brand.cjs');
 exports.run=async({win,service,store,exportReport,exportSummary,supportEvents,output})=>{
+  if(process.argv.includes('--search-live-only'))return require('./search-live-smoke.cjs').run({win,service,output});
   if(process.argv.includes('--provider-ui-only')){await fs.mkdir(output,{recursive:true});return require('./provider-ui-smoke.cjs').run({win,service,output});}
   const naverFixture=require('./fixtures/naver-smoke.cjs'),naverMock=naverFixture.install(service);try{
   await fs.mkdir(output,{recursive:true});if(process.env.RE_HELPER_TEST_SHOW_UI==='1')win.showInactive();const errors=[];win.webContents.on('console-message',event=>{if(event.level==='error'||event.level===3){errors.push(event.message);console.log('RENDER ERROR',event.message);}});
