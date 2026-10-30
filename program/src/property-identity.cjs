@@ -8,6 +8,10 @@ function confirmationNameParts(value){
  const name=nameKey(value).replace(/(?:아파트|apt)$/,'').replace(/제(?=\d+(?:차|단지))/g,''),phase=phases(name);
  return {name,phase,stem:name.replace(/\d+(?:차|단지)/g,''),terminal:phase.length?null:name.match(/^(.*\D)(\d+)$/)};
 }
+function terminalPhaseMatch(x,y){
+ for(const [explicit,implicit]of [[x,y],[y,x]])if(explicit.phase.length===1&&implicit.terminal&&Number(explicit.phase[0].match(/^\d+/)[0])===Number(implicit.terminal[2])&&compatibleName(explicit.stem,implicit.terminal[1]))return true;
+ return false;
+}
 function identityConflict(a,b){
  if([phases,blocks].some(pick=>{const x=[...new Set(pick(a))].sort(),y=[...new Set(pick(b))].sort();return x.length&&y.length&&JSON.stringify(x)!==JSON.stringify(y);}))return true;
  // Official names may omit 차/단지. A matching address must not turn 3차
@@ -16,15 +20,14 @@ function identityConflict(a,b){
  for(const [explicit,implicit]of [[x,y],[y,x]])if(explicit.phase.length===1&&implicit.terminal&&compatibleName(explicit.stem,implicit.terminal[1])&&Number(explicit.phase[0].match(/^\d+/)[0])!==Number(implicit.terminal[2]))return true;
  return false;
 }
-// Formatting aliases propose an official candidate for confirmation; they do
+// Formatting aliases propose a candidate for address confirmation; they do
 // not relax the general name matcher used to filter transaction contracts.
 function confirmationNameMatch(a,b){
  if(identityConflict(a,b))return false;
  const x=confirmationNameParts(a),y=confirmationNameParts(b);
  if(compatibleName(x.name,y.name))return true;
  if(x.phase.length===1&&y.phase.length===1)return x.phase[0]===y.phase[0]&&compatibleName(x.stem,y.stem);
- for(const [explicit,implicit]of [[x,y],[y,x]])if(explicit.phase.length===1&&implicit.terminal&&Number(explicit.phase[0].match(/^\d+/)[0])===Number(implicit.terminal[2])&&compatibleName(explicit.stem,implicit.terminal[1]))return true;
- return false;
+ return terminalPhaseMatch(x,y);
 }
 function roadKey(s){const m=String(s||'').normalize('NFKC').match(/(?:^|\s)([가-힣a-zA-Z0-9·.]+(?:대로|로|길))\s*(\d+(?:-\d+)?)(?=\s|$|[,（(])/);return m?norm(m[1])+' '+m[2].split('-').map(n=>String(Number(n))).join('-'):'';}
 const PROVINCE=/^(?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주|.+(?:특별시|광역시|특별자치시|특별자치도|도))$/;
@@ -88,6 +91,14 @@ function matchesKaptIdentity(identity,candidate,{requireOfficialCode=false}={}){
   const prefix=address.prefix.split(/\s+/),knownRegion=!!(identity.province&&identity.region),addressRegion=knownRegion&&provinceKey(prefix[0])===provinceKey(identity.province)&&norm(prefix.slice(1).join(' '))===norm(identity.region);
   if(knownRegion&&!addressRegion)return false;
   if(compatibleName(identity.building,candidate.name))return true;
+  // 목동우성2 (trade register) and 목동우성2차 (public complex page)
+  // can share facts only after the full legal region and lot match above.
+  if(identity.code&&addressRegion&&terminalPhaseMatch(confirmationNameParts(identity.building),confirmationNameParts(candidate.name))){
+    const expectedBlocks=blocks(identity.building),sourceBlocks=blocks(candidate.name);
+    if(expectedBlocks.length!==sourceBlocks.length||expectedBlocks.some(block=>!sourceBlocks.includes(block)))return false;
+    const road=roadKey(identity.road),sourceRoad=roadKey(candidate.addressRoad);
+    return !road||!sourceRoad||road===sourceRoad;
+  }
   const bare=s=>nameKey(s).replace(/(?:아파트|apt)$/,''),official=bare(identity.building),name=bare(candidate.name),alias=bare(address.alias),town=nameKey(identity.town),stem=town.replace(/(?:읍|면|동|리)$/,'');
   if(official.length!==2||!identity.code||!stem||![stem+official,town+official].includes(name))return false;
   if(![official,stem+official,town+official].includes(alias))return false;
@@ -193,4 +204,4 @@ async function resolveProperty(client,input,signal,{region:knownRegion,expected}
   }
   const property=matches[0];return {region,property,identity:{requested:query,building:property.aprpnHsmpNm,code:String(property.aprpnHsmpCode),regionCode:region.code,province:region.province?.name||'',region:region.name||'',town:property.townName,lot:property.mnnm,road:property.roadNm||'',...(Number.isFinite(Number(property.la))&&Number.isFinite(Number(property.lo))?{lat:Number(property.la),lng:Number(property.lo)}:{}),match:expected?.officialCode?'selected-code':addressMatched?'address-coordinate':norm(query)===norm(property.aprpnHsmpNm)?'exact':'unique-name',source:'https://rt.molit.go.kr/pt/gis/gis.do',checkedAt:new Date().toISOString()}};
 }
-module.exports={requestedName,compatibleName,matchesKaptIdentity,selectProperties,resolveProperty,assertPropertyInput,nameKey,blocks,roadKey,identityConflict,addressParts};
+module.exports={requestedName,compatibleName,confirmationNameMatch,matchesKaptIdentity,selectProperties,resolveProperty,assertPropertyInput,nameKey,blocks,roadKey,identityConflict,addressParts};

@@ -83,3 +83,45 @@ test('ordinary analysis automatically fills missing parking without manual link 
  const row=require('../src/parking-presentation.cjs').snapshot({input,prices:second});assert.equal(row.total,700);assert.equal(row.perUnit,1.4);assert.equal(row.sourceName,'네이버 부동산');
  service.naverLookups=new Map();await service.reuseNaverLand(input,second,{forceRefresh:true});assert.equal(calls,2);
 });
+
+test('an imported phase alias reaches household and parking fields without another lookup',async()=>{
+ const mokdong=require('./fixtures/naver-mokdong.cjs'),r=mokdong.record(),service=new AnalysisService({bridge:new EventEmitter(),onEvent:()=>{}});
+ await service.importNaverLand(r);service.readNaverPage=service.findNaverComplex=async()=>{throw Error('complete import must be reused');};
+ const p={buildingResolution:mokdong.identity};await service.reuseNaverLand(input,p);
+ const report={input:{...input,building:mokdong.identity.building},prices:p},facts=require('../src/apartment-overview.cjs').data(report).properties[0].facts;
+ assert.equal(facts.units,1140);assert.equal(facts.parking.total,1376);assert.equal(facts.parking.perUnit,1376/1140);assert.equal(facts.approval,'2000-03-18');
+ assert.equal(p.naverLookup,undefined);
+});
+
+test('partial imports reread their verified link once and share the complete result across areas',async()=>{
+ const service=new AnalysisService({bridge:new EventEmitter(),onEvent:()=>{}}),r={...saved(),basic:{units:500,parkingSpaces:700,approvalDate:'2014-08-29'}};let reads=0,searches=0;
+ await service.importNaverLand({...r,basic:{units:500}});
+ service.readNaverPage=async url=>{reads++;assert.equal(url,r.sourceUrl);return r;};service.findNaverComplex=async()=>{searches++;throw Error('unnecessary search');};
+ const a={buildingResolution:identity},b={buildingResolution:identity};await Promise.all([service.reuseNaverLand(input,a),service.reuseNaverLand({...input,area:84},b)]);
+ assert.equal(reads,1);assert.equal(searches,0);assert.equal(a.naverLand.basic.parkingSpaces,700);assert.equal(b.naverLand.basic.parkingSpaces,700);
+ await service.reuseNaverLand(input,a,{forceRefresh:true});assert.equal(reads,2);
+});
+
+test('a failed or incomplete known page falls back to verified public search',async()=>{
+ for(const kind of ['failed','partial','wrong-lot']){
+  const service=new AnalysisService({bridge:new EventEmitter(),onEvent:()=>{}}),r=saved(),calls=[];
+  service.readNaverPage=async()=>{calls.push('link');if(kind==='failed')throw Error('network');return kind==='wrong-lot'?{...r,addressJibun:'인천광역시 연수구 송도동 2-1'}:r;};
+  service.findNaverComplex=async()=>{calls.push('search');return {...r,basic:{...r.basic,parkingSpaces:700}};};
+  const p={buildingResolution:identity,naverLand:r};await service.reuseNaverLand(input,p);assert.deepEqual(calls,['link','search']);assert.equal(p.naverLand.basic.parkingSpaces,700);
+ }
+});
+
+test('lookup errors can recover on retry and do not erase confirmed counts',async()=>{
+ const service=new AnalysisService({bridge:new EventEmitter(),onEvent:()=>{}}),p={buildingResolution:identity,naverLand:saved()};let calls=0;
+ service.findNaverComplex=async()=>{if(++calls===1)throw Error('temporary failure');return {...saved(),basic:{units:500,parkingSpaces:700,approvalDate:'2014-08-29'}};};
+ await service.reuseNaverLand(input,p);assert.equal(p.naverLookup.status,'unavailable');assert.equal(p.naverLand.basic.units,500);
+ await service.reuseNaverLand(input,p);assert.equal(calls,2);assert.equal(p.naverLand.basic.parkingSpaces,700);
+});
+
+test('cancellation and a mismatched link never persist an unverified replacement',async()=>{
+ const service=new AnalysisService({bridge:new EventEmitter(),onEvent:()=>{}}),controller=new AbortController(),p={buildingResolution:identity,naverLand:saved()};let searches=0;
+ service.readNaverPage=async()=>{controller.abort();return {...saved(),basic:{units:500,parkingSpaces:700,approvalDate:'2014-08-29'}};};service.findNaverComplex=async()=>{searches++;return saved();};
+ await assert.rejects(service.reuseNaverLand(input,p,{signal:controller.signal}),/중지/);assert.equal(searches,0);assert.equal(p.naverLand.basic.parkingSpaces,undefined);
+ service.readNaverPage=async()=>({...saved(),addressJibun:'인천광역시 연수구 송도동 2-1'});service.findNaverComplex=undefined;
+ await service.reuseNaverLand(input,p);assert.equal(p.naverLookup.status,'unavailable');assert.equal(p.naverLand.basic.units,500);assert.equal(service.naverStore,undefined);
+});

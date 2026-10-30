@@ -18,6 +18,14 @@ test('public result names and visible regions filter unrelated and partial searc
 test('automatic discovery searches the public UI then verifies the physical apartment without a manual URL',async()=>{
  const f=fixture(),reads=[],find=createNaverComplexFinder({BrowserWindow:f.BrowserWindow,readPage:async url=>{reads.push(url);return record();},timeoutMs:50}),r=await find(input,prices);assert.equal(r.basic.parkingSpaces,2434);assert.equal(reads.length,1);assert.equal(reads[0],'https://fin.land.naver.com/complexes/108450?tab=complex-info');assert.equal(f.windows[0].query,'송도동 베르디움더퍼스트');assert.equal(f.windows[0].loaded,'https://fin.land.naver.com/');assert.equal(f.windows[0].destroyed,true);assert.equal(f.windows[0].options.webPreferences.sandbox,true);assert.equal(f.windows[0].options.webPreferences.nodeIntegration,false);assert.equal(f.windows[0].options.webPreferences.contextIsolation,true);assert.ok(!f.windows[0].options.webPreferences.partition.startsWith('persist:'));
 });
+
+test('official terminal phase names find their public aliases but still require the matching lot',async()=>{
+ const mokdong=require('./fixtures/naver-mokdong.cjs'),i=mokdong.identity,r=mokdong.record(),results=[{index:0,name:r.name,address:'서울시 양천구 신정동',links:[r.sourceUrl]},{index:1,name:'목동우성3차',address:'서울시 양천구 신정동',links:['https://fin.land.naver.com/complexes/8743']}];
+ assert.equal(resultCandidates({rows:results},i).length,1);
+ const f=fixture({results}),find=createNaverComplexFinder({BrowserWindow:f.BrowserWindow,readPage:async()=>r,timeoutMs:50});
+ assert.equal((await find(input,{buildingResolution:i})).basic.parkingSpaces,1376);
+ const wrong=fixture({results});await assert.rejects(createNaverComplexFinder({BrowserWindow:wrong.BrowserWindow,readPage:async()=>({...r,addressJibun:'서울시 양천구 신정동 338'}),timeoutMs:50})(input,{buildingResolution:i}),/대조하지 못/);
+});
 test('a public button without a link is clicked before reading the actually displayed complex identifier',async()=>{
  const f=fixture({results:[{...rows()[0],links:[]}]}),r=await createNaverComplexFinder({BrowserWindow:f.BrowserWindow,readPage:async()=>record(),timeoutMs:50})(input,prices);assert.equal(r.complexNo,'108450');assert.ok(f.windows[0].calls.some(s=>s.includes('const expected=')));assert.ok(f.windows[0].calls.some(s=>s.includes('return {ids,name:')));
 });

@@ -1,7 +1,7 @@
 {
   "name": "real-estate-helper",
   "productName": "부동산 도우미",
-  "version": "0.6.30",
+  "version": "0.6.31",
   "pcAuthentication": "test",
   "private": true,
   "description": "지인 부동산 사장님을 위한 PC 설치형 분석 도우미",
@@ -59,7 +59,8 @@
       "tests/customer-summary-smoke.cjs",
       "tests/export-location-smoke.cjs",
       "tests/provider-ui-smoke.cjs",
-      "tests/search-live-smoke.cjs"
+      "tests/search-live-smoke.cjs",
+      "tests/naver-basics-live-smoke.cjs"
     ],
     "extraResources": [
       {

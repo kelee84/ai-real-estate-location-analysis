@@ -29,20 +29,36 @@ class AnalysisService {
   }
   async reuseNaverLand(input,prices,{forceRefresh=false,signal,onProgress}={}){
     if(input.asset!=='apartment'||input.asOf!==todayKst())return prices.naverLand||null;
+    const naver=require('./naver-land.cjs'),identity=prices.buildingResolution,scope={identity,asOf:input.asOf};
+    const previous=naver.current(prices.naverLand,scope)?naver.normalize(prices.naverLand):null;
     if(forceRefresh)delete prices.naverLand;
     const saved=!forceRefresh&&await this.naverStore?.forIdentity(input,prices);
     if(saved)prices.naverLand=saved;
-    else if(!require('./naver-land.cjs').current(prices.naverLand,{identity:prices.buildingResolution,asOf:input.asOf}))delete prices.naverLand;
+    else if(!naver.current(prices.naverLand,scope))delete prices.naverLand;
+    const linked=prices.naverLand||previous,canReadLink=linked&&typeof this.readNaverPage==='function';
     const archhub=require('./archhub.cjs'),official=archhub.verified(prices.archhub,{identity:prices.buildingResolution,asOf:input.asOf});
-    if(typeof this.findNaverComplex==='function'&&!(archhub.complete(official)&&require('./living-access.cjs').point(prices.buildingResolution))&&(!archhub.complete(prices.naverLand)||forceRefresh)){
-      this.naverLookups??=new Map();const identity=prices.buildingResolution,key=JSON.stringify([input.asOf,identity?.code,identity?.regionCode,identity?.town,identity?.lot]);
+    if((canReadLink||typeof this.findNaverComplex==='function')&&!(archhub.complete(official)&&require('./living-access.cjs').point(identity))&&(!archhub.complete(prices.naverLand)||forceRefresh)){
+      this.naverLookups??=new Map();const key=JSON.stringify([input.asOf,identity?.code,identity?.regionCode,identity?.town,identity?.lot]);
       onProgress?.('네이버 부동산에서 주차대수와 공개 단지정보를 자동으로 확인하고 있습니다.');
-      if(!this.naverLookups.has(key))this.naverLookups.set(key,this.findNaverComplex(input,prices,{signal}).then(async record=>{
-        if(!require('./naver-land.cjs').current(record,{identity,asOf:input.asOf}))throw new Error('네이버 단지정보가 공식 단지·주소와 일치하지 않습니다.');
-        this.naverStore??=new (require('./naver-land.cjs').NaverLandStore)(this.userData);return this.naverStore.import(record);
-      }));
+      if(forceRefresh)this.naverLookups.delete(key);
+      if(!this.naverLookups.has(key))this.naverLookups.set(key,(async()=>{
+        let record,lastError;
+        const accept=value=>{const r=naver.normalize(value);if(!naver.current(r,scope))throw new Error('네이버 단지정보가 공식 단지·주소와 일치하지 않습니다.');return r;};
+        // Revisit the already verified public link before repeating a name search.
+        if(canReadLink)try{record=accept(await this.readNaverPage(linked.sourceUrl,{signal}));}catch(error){if(signal?.aborted)throw error;lastError=error;}
+        if(!archhub.complete(record)&&typeof this.findNaverComplex==='function')try{
+          const found=accept(await this.findNaverComplex(input,prices,{signal}));
+          if(!record||archhub.complete(found)||!['units','parkingSpaces'].some(k=>record.basic?.[k]!=null&&found.basic?.[k]==null))record=found;
+        }catch(error){if(signal?.aborted)throw error;lastError=error;}
+        if(signal?.aborted)throw new Error('네이버 정보 가져오기를 중지했습니다.');
+        if(!record)throw lastError||new Error('네이버 단지 기본정보를 확인하지 못했습니다.');
+        // Never erase a confirmed count with a partial response or mix ratios
+        // across separate observations. Explicit refresh keeps only fresh data.
+        if(!forceRefresh&&linked&&['units','parkingSpaces'].some(k=>linked.basic?.[k]!=null&&record.basic?.[k]==null))return linked;
+        this.naverStore??=new naver.NaverLandStore(this.userData);return this.naverStore.import(record);
+      })());
       try{prices.naverLand=await this.naverLookups.get(key);prices.naverLookup={status:'received',checkedAt:prices.naverLand.checkedAt};}
-      catch(error){if(signal?.aborted)throw error;prices.naverLookup={status:'unavailable',reason:error.message};onProgress?.('네이버 단지정보 자동 확인을 마치지 못했습니다. 확인된 자료로 분석을 계속합니다.');}
+      catch(error){this.naverLookups.delete(key);if(signal?.aborted)throw error;prices.naverLookup={status:'unavailable',reason:error.message};onProgress?.('네이버 단지정보 자동 확인을 마치지 못했습니다. 확인된 자료로 분석을 계속합니다.');}
     }
     return prices.naverLand||null;
   }
