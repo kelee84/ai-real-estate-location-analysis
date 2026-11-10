@@ -66,7 +66,7 @@ class Client{
  async rpc(method,params,{signal,notification=false}={}){
   const id=++this.seq,payload={jsonrpc:'2.0',...(!notification?{id}:{}),method,...(params?{params}:{})},timeout=AbortSignal.timeout(25000),abort=signal?AbortSignal.any([signal,timeout]):timeout;
   const response=await this.fetcher(URL,{method:'POST',headers:this.headers,body:JSON.stringify(payload),signal:abort,redirect:'error'});
-  if(!response.ok)throw Error('건축HUB HTTP '+response.status);
+  if(!response.ok){const error=Error('건축HUB HTTP '+response.status);error.status=response.status;await response.body?.cancel().catch(()=>{});throw error;}
   const sid=response.headers.get('mcp-session-id');if(sid)this.headers['Mcp-Session-Id']=sid;
   if(response.status===202){await response.body?.cancel();return null;}
   const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='',bytes=0;
@@ -74,9 +74,17 @@ class Client{
    if(notification)return null;const item=JSON.parse(buffer);if(item.error)throw Error('건축HUB MCP 오류');return item.result;
   }finally{await reader.cancel().catch(()=>{});reader.releaseLock();}
  }
- async call(name,args,{signal}={}){
+ async call(name,args,{signal}={},retried=false){
   if(!this.ready)this.ready=this.rpc('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'real-estate-helper',version:require('../package.json').version}},{signal}).then(async r=>{this.headers['MCP-Protocol-Version']=r.protocolVersion;await this.rpc('notifications/initialized',null,{signal,notification:true});}).catch(e=>{this.ready=null;throw e;});
-  await this.ready;this.onCall({server:'archhub',tool:name,arguments:args});return text(await this.rpc('tools/call',{name,arguments:args},{signal}));
+  await this.ready;this.onCall({server:'archhub',tool:name,arguments:args});
+  try{return text(await this.rpc('tools/call',{name,arguments:args},{signal}));}
+  catch(error){
+   // 서버가 세션을 만료시키면 404를 돌려준다(MCP Streamable HTTP). 예전에는 앱을 다시 켤 때까지 모든 조회가 실패했다.
+   // 만료된 세션만 버리고 한 번 새로 연결한다. 그 밖의 오류와 두 번째 실패는 그대로 알린다.
+   if(retried||error.status!==404||!this.headers['Mcp-Session-Id'])throw error;
+   delete this.headers['Mcp-Session-Id'];delete this.headers['MCP-Protocol-Version'];this.ready=null;
+   return this.call(name,args,{signal},true);
+  }
  }
 }
 class Store{

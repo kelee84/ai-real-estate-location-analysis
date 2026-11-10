@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ipzitalk": {
+      "type": "http",
+      "url": "https://ipji-talk.com/mcp"
+    }
+  }
+}

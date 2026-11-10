@@ -107,7 +107,8 @@ function quotaState(data) {
 }
 function money(n) { if(n===null||n===undefined)return '산출 불가';return `${new Intl.NumberFormat('ko-KR',{maximumFractionDigits:1}).format(n)}만원`; }
 // Display only: source amounts and formulas remain in 만원.
-function averageMoney(n) { if(!Number.isFinite(n))return '산출 불가';return Math.abs(n)>=10000?new Intl.NumberFormat('ko-KR',{maximumFractionDigits:1}).format(n/10000)+'억':money(n); }
+// 표시 단위는 반올림한 값으로 정한다(9,999.96만원을 '10,000만원'으로 쓰지 않는다).
+function averageMoney(n) { if(!Number.isFinite(n))return '산출 불가';return Math.round(Math.abs(n)*10)/10>=10000?new Intl.NumberFormat('ko-KR',{maximumFractionDigits:1}).format(n/10000)+'억':money(n); }
 function escapeHtml(s) { return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function validateReport(report) {
   const issues=[];if(!report?.conclusion||!report?.title)throw new Error('분석 결과의 필수 항목이 빠졌습니다. 다시 분석해 주세요.');

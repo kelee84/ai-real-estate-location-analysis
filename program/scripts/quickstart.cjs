@@ -2,7 +2,7 @@
 const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),{spawn}=require('node:child_process');
 const pkg=require('../package.json');
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function guideHtml(){
+function guideHtml({portable=false}={}){
   const version=escape(pkg.version),activation=pkg.pcAuthentication==='test'?'이 배포본은 PC 인증번호 없이 실행됩니다.':'처음 실행할 때 안내에 따라 PC 인증을 완료하세요.';
   return `<!doctype html><html lang="ko"><meta charset="utf-8"><title>부동산 도우미 ${version} - 처음 사용하기</title>
   <style>
@@ -11,7 +11,7 @@ function guideHtml(){
   </style><body>
   <header><span class="brand">AI SHERPA · 부동산 도우미</span><span>v${version} · Windows PC</span></header>
   <h1>처음 사용하기</h1><p class="lead">설치부터 보고서 저장까지, 아래 순서대로 시작하세요.</p>
-  <section class="step"><h2><span class="number">1</span>설치하고 실행하기</h2><p><strong>RealEstateHelper-Setup-${version}-x64.exe</strong>를 실행한 뒤<br>바탕화면의 <strong>‘부동산 도우미’</strong>를 엽니다.</p><p class="note">${activation}</p></section>
+  <section class="step"><h2><span class="number">1</span>${portable?'폴더에서 바로 실행하기':'설치하고 실행하기'}</h2><p>${portable?'<strong>win-unpacked</strong> 폴더 안의 <strong>‘부동산 도우미.exe’</strong>를 실행합니다.<br>폴더 전체를 함께 보관하고, 이전 버전이 열려 있다면 종료한 뒤 실행하세요.':`<strong>RealEstateHelper-Setup-${version}-x64.exe</strong>를 실행한 뒤<br>바탕화면의 <strong>‘부동산 도우미’</strong>를 엽니다.`}</p><p class="note">${activation}</p></section>
   <section class="step"><h2><span class="number">2</span>사용할 AI 선택하기</h2><p>왼쪽 아래 <strong>‘사용 설정’ → ‘연결할 AI’</strong>에서 하나를 선택합니다.</p>
   <table><thead><tr><th>AI</th><th>연결 방법</th></tr></thead><tbody><tr><td>GPT</td><td>본인 ChatGPT 계정으로 로그인</td></tr><tr><td>Gemini</td><td>Google AI Studio에서 발급한 API 키 입력 → ‘키 저장하고 연결’</td></tr><tr><td>Claude</td><td>Claude Console에서 발급한 API 키 입력 → ‘키 저장하고 연결’</td></tr></tbody></table>
   <p class="note">API 키는 프로그램에 직접 입력하세요. Gemini·Claude API 비용과 한도는 채팅 구독과 별도입니다.<br>저장된 키는 다시 입력할 필요가 없습니다. 키 입력창은 연결 시 보안을 위해 비워집니다.</p></section>
@@ -30,7 +30,8 @@ async function render(pdf){
   await app.whenReady();
   const isolated=session.fromPartition('quickstart-'+Date.now());
   isolated.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*']},(_request,callback)=>callback({cancel:true}));
-  const html=path.join(temp,'guide.html');await fs.writeFile(html,guideHtml());
+  const portable=!await fs.stat(path.join(path.dirname(pdf),`RealEstateHelper-Setup-${pkg.version}-x64.exe`)).then(s=>s.isFile()).catch(()=>false);
+  const html=path.join(temp,'guide.html');await fs.writeFile(html,guideHtml({portable}));
   const win=new BrowserWindow({show:false,webPreferences:{session:isolated,sandbox:true,contextIsolation:true,nodeIntegration:false}});
   try{await win.loadFile(html);await win.webContents.executeJavaScript('document.fonts.ready.then(()=>true)');
     const data=await win.webContents.printToPDF({printBackground:true,preferCSSPageSize:true});

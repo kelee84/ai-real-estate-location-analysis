@@ -23,7 +23,9 @@ function projectCategory(t,{radiusM,categories,asOf}){
  const derivedData={...structuredClone(d),radius_m:radiusM,results,pagination_by_category:pagination,metadata:{...d.metadata,truncated:Object.values(pagination).some(p=>p.source_cap_reached)}};
  return {server:'ipzitalk',tool:t.tool,arguments:{...args,categories:Object.keys(results),radius_m:radiusM},result:{structuredContent:derivedData},networkSkipped:true,reused:true,derived:true,researchNetworkAttempt:false,sourceQuery:{tool:t.tool,arguments:structuredClone(args),checkedAt:d.metadata.collected_at,radiusM:radius,method:'validated-category-radius-filter-v1',note:'원본 묶음 응답을 좌표로 필터링했습니다. 신규 입지톡 요청이 아니며 원본의 조회 제한을 유지합니다.'}};
 }
-function projections(t,asOf){return [projectCategory(t,{radiusM:1500,categories:['subway','school_elementary','mart_large','pharmacy','hospital','academy'],asOf}),projectCategory(t,{radiusM:3000,categories:['school'],asOf})].filter(Boolean);}
+function projections(t,asOf){return [projectCategory(t,{radiusM:1500,categories:['subway','school_elementary','mart_large','pharmacy','hospital','academy'],asOf}),projectCategory(t,{radiusM:3000,categories:['school'],asOf}),
+ // 1.5~3km 역도 같은 검증(좌표·거리·정렬·당일)을 거친 원본 묶음에서만 가져온다. 새 입지톡 요청은 없다.
+ projectCategory(t,{radiusM:3000,categories:['subway'],asOf})].filter(Boolean);}
 function elementarySchoolProof(tools,{center,asOf}){
  const accept=p=>!!String(p.name||'').trim()&&!/예정|계획|폐교|휴교|공사\s*중/.test(String(p.name))&&/(?:^| > )초등학교(?: >|$)/.test(String(p.kakao_category_name||''));
  for(const t of tools||[]){

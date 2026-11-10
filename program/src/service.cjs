@@ -29,20 +29,36 @@ class AnalysisService {
   }
   async reuseNaverLand(input,prices,{forceRefresh=false,signal,onProgress}={}){
     if(input.asset!=='apartment'||input.asOf!==todayKst())return prices.naverLand||null;
+    const naver=require('./naver-land.cjs'),identity=prices.buildingResolution,scope={identity,asOf:input.asOf};
+    const previous=naver.current(prices.naverLand,scope)?naver.normalize(prices.naverLand):null;
     if(forceRefresh)delete prices.naverLand;
     const saved=!forceRefresh&&await this.naverStore?.forIdentity(input,prices);
     if(saved)prices.naverLand=saved;
-    else if(!require('./naver-land.cjs').current(prices.naverLand,{identity:prices.buildingResolution,asOf:input.asOf}))delete prices.naverLand;
+    else if(!naver.current(prices.naverLand,scope))delete prices.naverLand;
+    const linked=prices.naverLand||previous,canReadLink=linked&&typeof this.readNaverPage==='function';
     const archhub=require('./archhub.cjs'),official=archhub.verified(prices.archhub,{identity:prices.buildingResolution,asOf:input.asOf});
-    if(typeof this.findNaverComplex==='function'&&!(archhub.complete(official)&&require('./living-access.cjs').point(prices.buildingResolution))&&(!archhub.complete(prices.naverLand)||forceRefresh)){
-      this.naverLookups??=new Map();const identity=prices.buildingResolution,key=JSON.stringify([input.asOf,identity?.code,identity?.regionCode,identity?.town,identity?.lot]);
+    if((canReadLink||typeof this.findNaverComplex==='function')&&!(archhub.complete(official)&&require('./living-access.cjs').point(identity))&&(!archhub.complete(prices.naverLand)||forceRefresh)){
+      this.naverLookups??=new Map();const key=JSON.stringify([input.asOf,identity?.code,identity?.regionCode,identity?.town,identity?.lot]);
       onProgress?.('네이버 부동산에서 주차대수와 공개 단지정보를 자동으로 확인하고 있습니다.');
-      if(!this.naverLookups.has(key))this.naverLookups.set(key,this.findNaverComplex(input,prices,{signal}).then(async record=>{
-        if(!require('./naver-land.cjs').current(record,{identity,asOf:input.asOf}))throw new Error('네이버 단지정보가 공식 단지·주소와 일치하지 않습니다.');
-        this.naverStore??=new (require('./naver-land.cjs').NaverLandStore)(this.userData);return this.naverStore.import(record);
-      }));
+      if(forceRefresh)this.naverLookups.delete(key);
+      if(!this.naverLookups.has(key))this.naverLookups.set(key,(async()=>{
+        let record,lastError;
+        const accept=value=>{const r=naver.normalize(value);if(!naver.current(r,scope))throw new Error('네이버 단지정보가 공식 단지·주소와 일치하지 않습니다.');return r;};
+        // Revisit the already verified public link before repeating a name search.
+        if(canReadLink)try{record=accept(await this.readNaverPage(linked.sourceUrl,{signal}));}catch(error){if(signal?.aborted)throw error;lastError=error;}
+        if(!archhub.complete(record)&&typeof this.findNaverComplex==='function')try{
+          const found=accept(await this.findNaverComplex(input,prices,{signal}));
+          if(!record||archhub.complete(found)||!['units','parkingSpaces'].some(k=>record.basic?.[k]!=null&&found.basic?.[k]==null))record=found;
+        }catch(error){if(signal?.aborted)throw error;lastError=error;}
+        if(signal?.aborted)throw new Error('네이버 정보 가져오기를 중지했습니다.');
+        if(!record)throw lastError||new Error('네이버 단지 기본정보를 확인하지 못했습니다.');
+        // Never erase a confirmed count with a partial response or mix ratios
+        // across separate observations. Explicit refresh keeps only fresh data.
+        if(!forceRefresh&&linked&&['units','parkingSpaces'].some(k=>linked.basic?.[k]!=null&&record.basic?.[k]==null))return linked;
+        this.naverStore??=new naver.NaverLandStore(this.userData);return this.naverStore.import(record);
+      })());
       try{prices.naverLand=await this.naverLookups.get(key);prices.naverLookup={status:'received',checkedAt:prices.naverLand.checkedAt};}
-      catch(error){if(signal?.aborted)throw error;prices.naverLookup={status:'unavailable',reason:error.message};onProgress?.('네이버 단지정보 자동 확인을 마치지 못했습니다. 확인된 자료로 분석을 계속합니다.');}
+      catch(error){this.naverLookups.delete(key);if(signal?.aborted)throw error;prices.naverLookup={status:'unavailable',reason:error.message};onProgress?.('네이버 단지정보 자동 확인을 마치지 못했습니다. 확인된 자료로 분석을 계속합니다.');}
     }
     return prices.naverLand||null;
   }
@@ -149,17 +165,39 @@ class AnalysisService {
     try{return await this.store.update(id,report=>consultation.updateConsultation(report,payload),{afterSave:false});}
     finally{if(this.active===activity)this.active=null;}
   }
-  async searchTypes(raw){
-    if(this.active)throw new Error('분석이 끝난 뒤 타입을 검색해 주세요.');
+  searchTask(operation,input,work){
+    const errors=require('./search-errors.cjs'),key=JSON.stringify([operation,...['target','asset','building','asOf','forceRefresh','searchToken','candidateId'].map(k=>input[k]??null)]),current=this.active;
+    if(current?.kind==='property-search'){
+      if(current.key===key&&!current.controller.signal.aborted){current.requestIds.add(input.searchRequestId);return current.promise;}
+      current.controller.abort();
+    }else if(current)return Promise.reject(errors.failure('SEARCH_BUSY','진행 중인 작업이 끝난 뒤 단지를 검색해 주세요.','input'));
+    const task={kind:'property-search',key,controller:new AbortController(),requestIds:new Set([input.searchRequestId])};this.active=task;
+    task.promise=Promise.resolve().then(()=>work(task.controller.signal)).catch(async error=>{
+      this.lastSearchDiagnostic={...errors.diagnostic(error,operation),checkedAt:new Date().toISOString()};
+      if(this.userData&&!task.controller.signal.aborted)await fs.writeFile(path.join(this.userData,'search-diagnostic.json'),JSON.stringify(this.lastSearchDiagnostic)).catch(()=>{});
+      throw errors.present(error,task.controller.signal);
+    }).finally(()=>{if(this.active===task)this.active=null;});return task.promise;
+  }
+  cancelSearch(requestId){
+    const task=this.active;if(task?.kind!=='property-search'||!task.requestIds.has(requestId))return false;
+    task.requestIds.delete(requestId);if(!task.requestIds.size){task.controller.abort();this.active=null;}return true;
+  }
+  searchTypes(raw){return this.searchTask('types',raw,signal=>this.searchTypesWithSignal(raw,signal));}
+  async searchTypesWithSignal(raw,signal){
     require('./property-identity.cjs').assertPropertyInput(raw);
     const search=require('./property-search.cjs');
-    if(!search.hasRegion(raw.target))return this.searchProperties(raw);
-    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw);}catch(error){if(error.code==='PROPERTY_AMBIGUOUS'&&error.region?.province?.name)return this.rememberPropertySearch(search.officialCandidates(raw,error));if(['PROPERTY_AMBIGUOUS','REGION_REQUIRED','REGION_AMBIGUOUS'].includes(error.code)&&(!raw.asset||raw.asset==='apartment'))return this.searchProperties(raw);throw error;}
+    // With a region, first resolve the user's address against the official
+    // register. A cached alias must not add an extra candidate-selection step.
+    // Name-only searches and official misses still reuse saved candidates below.
+    if(!search.hasRegion(raw.target))return this.searchPropertiesWithSignal(raw,signal);
+    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw,signal);}catch(error){require('./search-errors.cjs').cancelled(signal);if(error.code==='PROPERTY_AMBIGUOUS'&&error.region?.province?.name)return this.rememberPropertySearch(search.officialCandidates(raw,error));if(['PROPERTY_AMBIGUOUS','PROPERTY_NOT_FOUND','REGION_REQUIRED','REGION_AMBIGUOUS'].includes(error.code)&&(!raw.asset||raw.asset==='apartment'))return this.searchPropertiesWithSignal(raw,signal);throw error;}
+    require('./search-errors.cjs').cancelled(signal);
     return this.rememberCatalog(catalog);
   }
-  async searchProperties(raw){
-    if(this.active)throw new Error('분석이 끝난 뒤 단지를 검색해 주세요.');
-    const before=this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0,result=await require('./saved-property-search.cjs').find(this.store,raw,{forceRefresh:!!raw.forceRefresh})||await require('./property-search.cjs').search(this.bridge,raw,{client:this.data,naverStore:this.naverStore,forceRefresh:!!raw.forceRefresh});
+  searchProperties(raw){return this.searchTask('properties',raw,signal=>this.searchPropertiesWithSignal(raw,signal));}
+  async searchPropertiesWithSignal(raw,signal){
+    const before=this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0,result=await require('./saved-property-search.cjs').find(this.store,raw,{forceRefresh:!!raw.forceRefresh,signal})||await require('./property-search.cjs').search(this.bridge,raw,{client:this.data,naverStore:this.naverStore,forceRefresh:!!raw.forceRefresh,signal});
+    require('./search-errors.cjs').cancelled(signal);
     result.ipzitalkPreflightCalls=Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before);
     return this.rememberPropertySearch(result);
   }
@@ -168,12 +206,13 @@ class AnalysisService {
     for(const [key,value]of this.propertySearches)if(Date.now()-value.time>30*60*1000)this.propertySearches.delete(key);
     this.propertySearches.set(token,{...result,time:Date.now()});return {kind:'candidates',searchToken:token,candidates:result.candidates.map(({id,name,address,road})=>({id,name,address,road})),checkedAt:result.checkedAt,sourceName:result.sourceName,reason:result.reason||''};
   }
-  async selectProperty({searchToken,candidateId}){
-    if(this.active)throw new Error('분석이 끝난 뒤 단지를 선택해 주세요.');
+  selectProperty(input){return this.searchTask('select',input,signal=>this.selectPropertyWithSignal(input,signal));}
+  async selectPropertyWithSignal({searchToken,candidateId},signal){
     const saved=this.propertySearches?.get(searchToken),choice=saved?.candidates.find(p=>p.id===candidateId);if(!saved||!choice||Date.now()-saved.time>30*60*1000)throw new Error('단지 검색이 만료되었거나 후보가 바뀌었습니다. 다시 검색해 주세요.');
     const before=this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0;
-    const search=require('./property-search.cjs'),selected=choice.officialCode?search.officialChoice(saved,choice):await search.resolveChoice(this.bridge,this.data,choice),raw={...saved.input,target:selected.target,building:selected.building};
-    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw,undefined,{region:selected.region,expected:selected.expected});}catch(error){if(error.code==='PROPERTY_AMBIGUOUS')return this.rememberPropertySearch({...search.officialCandidates(raw,error),ipzitalkPreflightCalls:(saved.ipzitalkPreflightCalls||0)+Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before)});throw error;}
+    const search=require('./property-search.cjs'),selected=choice.officialCode?search.officialChoice(saved,choice):await search.resolveChoice(this.bridge,this.data,choice,{signal}),raw={...saved.input,target:selected.target,building:selected.building};
+    let catalog;try{catalog=await require('./type-catalog.cjs').discoverTypes(this.data,raw,signal,{region:selected.region,expected:selected.expected});}catch(error){require('./search-errors.cjs').cancelled(signal);if(error.code==='PROPERTY_AMBIGUOUS')return this.rememberPropertySearch({...search.officialCandidates(raw,error),ipzitalkPreflightCalls:(saved.ipzitalkPreflightCalls||0)+Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before)});throw error;}
+    require('./search-errors.cjs').cancelled(signal);
     catalog.ipzitalkPreflightCalls=(saved.ipzitalkPreflightCalls||0)+Math.max(0,(this.bridge.ipzitalkUsage?.snapshot().sessionCalls||0)-before);
     return this.rememberCatalog(catalog);
   }
@@ -262,12 +301,13 @@ class AnalysisService {
       let research={tools:[],issues:[],checks:[]},scoreEvidence;
       if(priorReady){
         scoreEvidence=scoring.collectEvidence({input,prices,previous:previous.assessment.evidence});const raw=[];
-        for(const deal of ['trade','rent'])try{raw.push({deal,bytes:(await fs.readFile(path.join(dir,'raw',`RTMS-${deal}.csv`))).toString('base64')});}catch(e){if(e.code!=='ENOENT')throw e;}
+        // 환경 근거 보완은 실거래 원문을 쓰지 않으므로 다시 읽지 않는다.
         const supplemented=await researchEngine.ensureLivingEvidence(this.bridge,input,prices,{previous:scoreEvidence,raw,signal:controller.signal,readTrail:this.readTrail,cache:this.researchCache,forceRefresh:refreshPublic,onProgress:message=>this.onEvent({stage:'research',message})});scoreEvidence=supplemented.evidence;research=supplemented.research;
       }
       else{
         let raw=collected.raw||[];
-        if(reuse){raw=[];for(const deal of ['trade','rent'])try{raw.push({deal,bytes:(await fs.readFile(path.join(this.store.path(previous.id),'raw',`RTMS-${deal}.csv`))).toString('base64')});}catch{}}
+        // 수집 단계는 지역 실거래 원문(수 MB)을 쓰지 않는다. 재사용할 때 다시 읽어 base64로 올리던 낭비를 없앴다.
+            if(reuse)raw=[];
         research=await researchEngine.collectResearch(this.bridge,input,prices,{raw,signal:controller.signal,readTrail:this.readTrail,cache:this.researchCache,forceRefresh:refreshPublic,onProgress:message=>this.onEvent({stage:'research',message})});
         scoreEvidence=scoring.collectEvidence({input,prices,tools:research.tools,school:research.school,livingAccess:research.livingAccess,nearbyContext:research.nearbyContext,nature:research.nature,natureAccess:research.natureAccess,peers:research.peers,listings:research.listings});
       }

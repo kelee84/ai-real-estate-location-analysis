@@ -12,7 +12,7 @@ function resultCandidates(state,identity){
  if(!state||!Array.isArray(state.rows))return [];
  if(Number.isInteger(state.total)&&state.total>state.rows.length)throw Error('네이버 공개 검색 결과가 일부만 표시되어 단지 자동 연결을 보류했습니다.');
  const found=state.rows.filter(r=>{
-  if(!r?.name||!r.address||rules.identityConflict(identity.building,r.name)||!rules.compatibleName(identity.building,r.name))return false;
+  if(!r?.name||!r.address||!rules.confirmationNameMatch(identity.building,r.name))return false;
   const tokens=r.address.trim().split(/\s+/);return province(tokens[0])===province(identity.province)&&normalize(tokens.slice(1).join(' '))===normalize(identity.region+' '+identity.town);
  }).map(r=>({index:r.index,name:r.name,address:r.address,url:(r.links||[]).map(observedComplexUrl).find(Boolean)||null}));
  if(found.length>5)throw Error('같은 이름·지역의 네이버 단지 후보가 여러 개여서 자동 연결하지 않았습니다.');return found;

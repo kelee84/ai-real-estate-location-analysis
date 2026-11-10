@@ -34,7 +34,7 @@ function buildMapMarkers({input={},identity={},evidence={},center=evidence.cente
  };
  add({...origin,name:targetName},'target',evidence.centerSource?'네이버 등록 단지 기준점 · 공식 주소 대조':'공식 단지 기준점',{target:true});
  const places=(evidence.places||[]).filter(p=>verifiedPlace(p,origin,asOf)).sort((a,b)=>a.distanceM-b.distanceM||String(a.id).localeCompare(String(b.id)));
- const railNames=new Set();for(const p of places.filter(p=>p.category==='subway'&&/지하철|전철/.test(p.kakao_category_name||''))){const key=normalize(p.name.replace(/\s*\d+호선.*$/,''));if(railNames.has(key))continue;railNames.add(key);add(p,'subway','등록 역 기준점 · 실제 출입구·보행 동선 미확인');if(railNames.size===2)break;}
+ const railNames=new Set();for(const p of places.filter(p=>p.category==='subway'&&/지하철|전철/.test(p.kakao_category_name||''))){const key=normalize(p.name.replace(/\s*\d+호선.*$/,''));if(railNames.has(key))continue;if(railNames.size&&p.distanceM>1500)break;railNames.add(key);add(p,'subway','등록 역 기준점 · 실제 출입구·보행 동선 미확인');if(railNames.size===2)break;}
  const schoolNames=evidence.school?.status==='verified'?evidence.school.schoolNames||[]:[],schools=places.filter(p=>p.category==='school_elementary'&&/초등학교/.test(p.kakao_category_name||''));
  const school=schools.find(p=>schoolNames.some(name=>normalize(name)===normalize(p.name)))||schools[0];
  if(school)add(school,'school',schoolNames.some(name=>normalize(name)===normalize(school.name))?'공식 통학구역 연계 학교 · 동·호수별 최종 배정·통학 동선 별도 확인':'주변 등록 초등학교 · 배정 학교 미확인');

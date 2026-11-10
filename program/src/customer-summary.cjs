@@ -31,6 +31,22 @@ function selection(r,preferences){
     return name+': '+ms.map((m,i)=>m.key+' '+customer.scoreLabel(results[i])).join(' / ')+'. '+(results.every(s=>s.score===max)?'동일 점수입니다.':top+'의 평가 점수가 높습니다.')+scope;
   });
 }
+// 고객이 적은 예산 상한을 같은 거래 유형의 최근 6개월 평균과 나란히 놓는다.
+// 두 저장값의 차이만 계산하며, 평균을 매물 가격으로 추정하거나 자료 없는 유형을 채우지 않는다.
+const BUDGET_LABEL={trade:'매매 예산',jeonse:'전세 보증금 예산',monthly:'월세 보증금 예산'};
+function budgetLines(ms,customerData){
+  const budget=customerData?.budgetManwon,kind=customerData?.budgetType;
+  if(!Number.isFinite(budget)||budget<=0||!BUDGET_LABEL[kind])return [];
+  const key=kind==='trade'?'price':'deposit',measure=kind==='trade'?'평균':'보증금 평균';
+  return ms.map(m=>{
+    const groups=(m.prices?.summaries||[]).filter(g=>g.kind===kind&&Number.isFinite(g[key])),head=BUDGET_LABEL[kind]+' '+averageMoney(budget)+' 대조'+(ms.length>1?' · '+m.key:'')+': ';
+    if(!groups.length)return head+'최근 6개월 '+KIND[kind]+' 거래 자료가 없어 대조하지 못했습니다.';
+    return head+groups.map(g=>{
+      const gap=g[key]-budget,scope=g.n+'건'+(groups.length>1?' · '+average.area(g):'');
+      return '최근 6개월 '+KIND[kind]+' '+measure+' '+averageMoney(g[key])+'('+scope+')은 예산'+(gap===0?'과 같습니다':'보다 '+averageMoney(Math.abs(gap))+(gap>0?' 높습니다':' 낮습니다'));
+    }).join(' / ')+'.'+(kind==='monthly'?' 월 임대료는 따로 확인하세요.':'');
+  });
+}
 function model(report){
   const r=customer.prepare(report),data=publicConsultation(report),rawMembers=flow.members(report),preparedMembers=flow.members(r);
   const ms=preparedMembers.map((m,i)=>({...m,key:m.key||String.fromCharCode(65+i)}));
@@ -40,7 +56,7 @@ function model(report){
     const cautions=list([...(m.limitations||[]),...(m.checks||[])]);
     return {key:m.key,name:m.input.building||m.input.target,area:basis.areaLabel(m),period:period?.start&&period?.end?period.start+' ~ '+period.end:'분석 기간 미확인',checkedAt:m.dataCheckedAt||m.createdAt||'조회일 미기록',condition:m.prices?.condition||'비교 조건 미확인',prices:priceLines(m),strengths:decisions[i]?.[1]||'강점 근거 미확인',weaknesses:decisions[i]?.[2]||'평가 가능한 지표가 없습니다.',cautions,note,scores:AXES.map(name=>{const s=score(m,name);return {name,label:customer.scoreLabel(s),evidence:customer.keyEvidence(s,m),scope:s.status==='partial'?customer.displayScope(s):''};})};
   });
-  return {title:ms.length>1?'우리 조건에 맞는 매물 비교':'우리 조건에 맞는 매물 살펴보기',report:r,data,properties,selection:selection(view,data.customer.priorities),sources:customer.sources(r),demo:report.demo||rawMembers.some(m=>m.demo)};
+  return {title:ms.length>1?'우리 조건에 맞는 매물 비교':'우리 조건에 맞는 매물 살펴보기',report:r,data,properties,selection:[...selection(view,data.customer.priorities),...budgetLines(ms,data.customer)],sources:customer.sources(r),demo:report.demo||rawMembers.some(m=>m.demo)};
 }
 function text(report){
   const m=model(report),lines=[m.title,'기준일 '+(report.input?.asOf||'미확인'),...parking.lines(m.report)];
@@ -64,4 +80,4 @@ ${parking.CSS}${theme.reportCss}</style></head><body><article>${theme.reportHead
 <h2>환경·가치 평가</h2><p class="note">1~100점 분석 평가 · * 부분 평가. 공인 등급·수익률·가격 상승 확률이 아닙니다. 평가 범위가 다른 항목은 점수만으로 비교하지 않습니다. 상세 배점은 원보고서의 근거를 확인해 주세요.</p>${table(['평가 항목',...m.properties.map(p=>p.key+' · '+p.name)],AXES.map((name,i)=>[name,...m.properties.map(p=>{const s=p.scores[i];return s.label+' · '+s.evidence.replace(/\n/g,' · ')+(s.scope?'\n부분 평가: '+s.scope:'');})]),'scores')}
 <section class="summary-map"><h2>위치와 주변 시설</h2>${mapHtml}<p class="note">${e(m.properties.map(p=>p.key+' · '+p.name).join(' / '))} · 지도에 표시된 위치·거리 기준을 확인해 주세요.</p><div class="sources"><h2>자료 출처</h2>${m.sources.length?m.sources.map(s=>`<p>${e(s.label)} · ${safeUrl(s.url)?`<a href="${e(safeUrl(s.url))}">${e(s.title)}</a>`:e(s.title)} · 조회 ${e(s.checkedAt||'미기록')}</p>`).join(''):'<p>확인 가능한 대표 출처가 저장되어 있지 않습니다. 상세 근거를 확인해 주세요.</p>'}</div><section class="office" aria-label="상담 부동산 업소">${safeImage(office.logoDataUrl)?`<img src="${e(office.logoDataUrl)}" alt="${e(office.name||'부동산 업소')} 로고">`:''}<div><strong>${e(office.name||'상담 부동산')}</strong>${office.agent||office.phone?`<p>${e([office.agent?'담당 '+office.agent:'',office.phone].filter(Boolean).join(' · '))}</p>`:''}${office.address?`<p class="note">${e(office.address)}</p>`:''}</div></section><footer>${e(REPORT_CREDIT)} · 보고서 ${e(r.id||'')} · 상세 거래와 전체 근거는 원보고서 참조</footer></section></article></body></html>`;
 }
-module.exports={html,text,model,AXES};
+module.exports={html,text,model,AXES,budgetLines};

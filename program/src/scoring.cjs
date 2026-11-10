@@ -90,7 +90,10 @@ function collectEvidence({input,prices,tools=[],previous,school,product,nature,n
     if(category==='shopping_large'&&radius>require('./shopping.cjs').RADIUS)continue;
     if(['school_middle','school_high'].includes(category)&&radius>require('./secondary-schools.cjs').RADIUS)continue;
     const distance=haversine(out.center,coord),reported=Number(p.distance_m),fromSearch=haversine(center,coord);
-    if(['subway','school_elementary','pharmacy'].includes(category)&&distance>1500)continue;
+    // 역·초등학교는 검증된 3km 조회 범위까지 받아 배점표의 '1,500m 초과 35점'을 적용한다.
+    // 예전에는 1.5km 밖이면 버려서 '먼 역'이 '평가 보류(모름)'로 보였다. 3km 안에도 없으면 지금처럼 보류한다.
+    if(category==='pharmacy'&&distance>1500)continue;
+    if(['subway','school_elementary'].includes(category)&&distance>3000)continue;
     if(['school_middle','school_high'].includes(category)&&distance>3000)continue;
     if(distance>radius+100||category==='shopping_large'&&distance>5000||p.distance_m==null||String(p.distance_m).trim()===''||!Number.isFinite(reported)||reported<0||Math.abs(fromSearch-reported)>Math.max(35,reported*.08))continue;
     if(out.places.some(x=>x.id===id&&x.category===category))continue;

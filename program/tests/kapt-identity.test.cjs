@@ -12,6 +12,17 @@ const basicData=()=>({name:candidate.name,kapt_code:'A12079501',basic:{address_j
 const tool=d=>({server:'ipzitalk',tool:'get_complex_info_by_query',result:{structuredContent:d}});
 const evidence=tools=>scoring.collectEvidence({input:{target:'서울특별시 서대문구 북아현동 두산',building:'두산',asset:'apartment',asOf:'2026-10-18'},prices:{buildingResolution:identity},tools});
 
+test('terminal phase aliases share public facts only after the official region and lot match',()=>{
+ const mokdong=require('./fixtures/naver-mokdong.cjs'),i=mokdong.identity,r=mokdong.record();
+ assert.equal(compatibleName(i.building,r.name),false,'contract-name matching remains strict');
+ assert.equal(matchesKaptIdentity(i,r),true);
+ assert.equal(matchesKaptIdentity({...i,building:r.name},{...r,name:i.building}),true);
+ for(const changed of [{name:'목동우성3차'},{name:'목동우성12차'},{name:'목동우성2차(18-1블록)'},{addressJibun:'서울시 양천구 신정동 338'},{addressJibun:'서울시 강서구 신정동 337'},{addressJibun:'부산시 양천구 신정동 337'},{addressRoad:'서울시 양천구 목동남로4길 6-25'},{officialCode:'3283'}])assert.equal(matchesKaptIdentity(i,{...r,...changed}),false,JSON.stringify(changed));
+ assert.equal(matchesKaptIdentity({...i,code:undefined},r),false);
+ assert.equal(matchesKaptIdentity({...i,province:undefined},r),false);
+ assert.equal(matchesKaptIdentity({...i,building:'목동우성2(17-1블록)'},{...r,name:'목동우성2차(18-1블록)'}),false);
+});
+
 test('a short trade-register name remains unsafe globally and only a corroborated K-apt address alias connects it',()=>{
  assert.equal(compatibleName('두산','북아현두산'),false);
  assert.equal(matchesKaptIdentity(identity,candidate),true);

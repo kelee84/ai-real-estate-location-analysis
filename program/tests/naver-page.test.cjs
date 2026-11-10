@@ -27,6 +27,35 @@ function fakeBrowser({states=[state()],destination=url,loadError=false,hang=fals
  const windows=[];class BrowserWindow{constructor(options){this.options=options;this.destroyed=false;this.calls=[];this.webContents=new EventEmitter();this.webContents.session={setPermissionRequestHandler:handler=>this.permission=handler};this.webContents.setWindowOpenHandler=handler=>this.popup=handler;this.webContents.getURL=()=>destination;this.webContents.executeJavaScript=async script=>{this.calls.push(script);if(script.includes('dataset.codexPublicRead'))return true;return states.length>1?states.shift():states[0];};windows.push(this);}async loadURL(value){this.loaded=value;if(loadError)throw Error('connection refused');if(hang)await new Promise(()=>{});}isDestroyed(){return this.destroyed;}destroy(){this.destroyed=true;}}
  return {BrowserWindow,windows};
 }
+test('Mokdong total households and parking stay separate from type households, charging spaces and ratios',()=>{
+ const source='https://fin.land.naver.com/complexes/8742',base={title:'목동우성2차',headings:['목동우성2차'],bodyText:'지번\n서울시 양천구 신정동 337\n세대수\n1,140세대\n주차\n1,376대 (세대당 1.2대)\n전기차 충전시설\n7대\n해당면적 세대수\n717세대'};
+ const r=fromPage(source,base);assert.equal(r.basic.units,1140);assert.equal(r.basic.parkingSpaces,1376);
+ const mokdong=require('./fixtures/naver-mokdong.cjs'),report={input:{asset:'apartment',building:mokdong.identity.building,asOf:require('../src/core.cjs').todayKst()},prices:{buildingResolution:mokdong.identity,naverLand:r}};
+ const overview=require('../src/apartment-overview.cjs').data(report).properties[0];
+ assert.equal(overview.values.units,'1,140세대');assert.equal(overview.values.parking,'총 1,376대 · 세대당 1.21대');
+ for(const value of ['세대당 1 대','세대당 1.2대','지상 100대 / 지하 1,276대','전기차 충전시설 7대','주차장 7대','1,37대','1.2대']){
+  const out=fromPage(source,{...base,bodyText:'',tables:[{label:'지번',value:'서울시 양천구 신정동 337'},{label:'세대수',value:'1,140세대'},{label:'주차',value}]});
+  assert.equal(out.basic.parkingSpaces,undefined,value);
+ }
+ const onlyType=fromPage(source,{...base,bodyText:'지번\n서울시 양천구 신정동 337\n해당면적 세대수\n717세대\n주차장\n7대'});
+ assert.equal(onlyType.basic?.units,undefined);assert.equal(onlyType.basic?.parkingSpaces,undefined);
+ for(const label of ['총주차대수','총 주차대수','주차대수','주차']){
+  const out=fromPage(source,{...base,bodyText:'',tables:[{label:'지번',value:'서울시 양천구 신정동 337'},{label,value:'총 1,376대 (세대당 1.2대)'}]});assert.equal(out.basic.parkingSpaces,1376,label);
+ }
+});
+
+test('page reader waits for household and parking hydration even when the address is ready',async()=>{
+ const partial=state({bodyText:'지번\n인천시 연수구 송도동 192-8\n세대수\n1,834세대'}),f=fakeBrowser({states:[partial,state()]});
+ const result=await createNaverPageReader({BrowserWindow:f.BrowserWindow,timeoutMs:1000})(url);
+ assert.equal(result.basic.units,1834);assert.equal(result.basic.parkingSpaces,2434);
+});
+
+test('missing counts remain absent after the bounded wait and an explicit zero total is preserved',async()=>{
+ const partial=state({bodyText:'지번\n인천시 연수구 송도동 192-8\n주차\n세대당 1 대'}),f=fakeBrowser({states:[partial]}),start=Date.now();
+ const result=await createNaverPageReader({BrowserWindow:f.BrowserWindow,timeoutMs:600})(url);
+ assert.equal(result.basic?.parkingSpaces,undefined);assert.equal(result.basic?.units,undefined);assert.ok(Date.now()-start<1500);
+ const zero=fromPage(url,state({tables:[{label:'주차',value:'0대'}]}));assert.equal(zero.basic.parkingSpaces,0);
+});
 test('page reader uses a temporary sandbox, waits for public content and blocks popup and unrelated navigation',async()=>{
  const f=fakeBrowser({states:[{title:'Npay부동산'},state()],destination:'https://fin.land.naver.com/map?layer=complexDetail'}),read=createNaverPageReader({BrowserWindow:f.BrowserWindow,timeoutMs:1000}),r=await read(url+'?token=secret');assert.equal(r.basic.parkingSpaces,2434);const win=f.windows[0];assert.equal(win.options.show,false);assert.equal(win.options.webPreferences.sandbox,true);assert.equal(win.options.webPreferences.nodeIntegration,false);assert.equal(win.options.webPreferences.contextIsolation,true);assert.ok(!win.options.webPreferences.partition.startsWith('persist:'));assert.equal(win.loaded,url+'?tab=complex-info');assert.equal(win.destroyed,true);assert.deepEqual(win.popup(),{action:'deny'});let permission;win.permission({},'geolocation',value=>permission=value);assert.equal(permission,false);
  let prevented=false;win.webContents.emit('will-navigate',{preventDefault:()=>prevented=true},'https://evil.example/');assert.equal(prevented,true);prevented=false;win.webContents.emit('will-redirect',{preventDefault:()=>prevented=true},'https://new.land.naver.com/complexes/108450');assert.equal(prevented,false);

@@ -11,8 +11,9 @@ test('missing elementary facts do not hide verified middle and high school acces
  const t=tool();t.result.structuredContent.results.school=t.result.structuredContent.results.school.filter(p=>!/초등학교/.test(p.kakao_category_name));const e=scoring.collectEvidence({input,prices,tools:[t]}),r=scoring.assessScores({scores:[]},{input,prices,previousEvidence:e}).scores[1];assert.equal(r.coverage,20);assert.equal(r.score,78);assert.doesNotMatch(r.scope,/초등학교/);
 });
 
-test('broader school records keep verified nearby elementary facts but cannot expand its 1.5 km scoring scope',()=>{
- const t=tool();t.result.structuredContent.results.school.push(p('7','범위밖초등학교','초등학교',.02));const e=scoring.collectEvidence({input,prices,tools:[t]});assert.equal(e.places.filter(p=>p.category==='school_elementary').length,1);assert.equal(e.places.find(p=>p.category==='school_elementary').name,'초등학교');assert.ok(!e.places.some(p=>p.name==='범위밖초등학교'));
+// 2026-11-10 사용자 결정: 1.5~3km 초등학교도 검증된 3km 조회 범위에서 받아 '초과 35점' 구간으로 평가한다. 가까운 학교가 있으면 그 학교가 그대로 평가 대상이다.
+test('broader school records keep the nearest elementary first and admit verified ones up to the 3 km search',()=>{
+ const t=tool();t.result.structuredContent.results.school.push(p('7','범위밖초등학교','초등학교',.02));const e=scoring.collectEvidence({input,prices,tools:[t]});assert.equal(e.places.filter(p=>p.category==='school_elementary').length,2);assert.equal(e.places.find(p=>p.category==='school_elementary').name,'초등학교');assert.equal(e.places.find(p=>p.name==='범위밖초등학교').distanceM,2224);
  const education=scoring.assessScores({scores:[]},{input,prices,previousEvidence:e}).scores[1];assert.equal(education.coverage,35);assert.equal(education.score,85);
 });
 test('comparison reuse supplements secondary school facts once and preserves the original report evidence',async()=>{

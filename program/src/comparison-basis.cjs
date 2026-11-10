@@ -34,7 +34,7 @@ function notes(members){
   const a=base.prices.summaries.filter(g=>g.kind===kind),b=other.prices.summaries.filter(g=>g.kind===kind),key=kind==='trade'?'price':'deposit';
   if(a.length!==1||b.length!==1||!Number.isFinite(a[0][key])||!Number.isFinite(b[0][key])||a[0][key]<=0)continue;
   const delta=b[0][key]-a[0][key],pct=delta/a[0][key]*100;
-  out.push(`${kind==='trade'?'매매':'전세'} 평균: ${other.key}가 ${base.key}보다 ${average.number(Math.abs(delta))}만원 ${delta>0?'높음':delta<0?'낮음':'차이 없음'} (${delta>=0?'+':''}${average.number(pct)}%, ${base.key} ${a[0].n}건·${other.key} ${b[0].n}건).`);
+  out.push(`${kind==='trade'?'매매':'전세'} 평균: ${other.key}가 ${base.key}보다 ${Math.abs(delta)>=10000?require('./core.cjs').averageMoney(Math.abs(delta)):average.number(Math.abs(delta))+'만원'} ${delta>0?'높음':delta<0?'낮음':'차이 없음'} (${delta>=0?'+':''}${average.number(pct)}%, ${base.key} ${a[0].n}건·${other.key} ${b[0].n}건).`);
  }
  if(members.some(m=>m.prices.summaries.some(g=>g.kind==='monthly')))out.push('월세는 같은 보증금 구간끼리 확인하세요. 같은 구간이라도 평균 보증금이 다르면 월 임대료만으로 유불리를 판단할 수 없습니다.');
  if(members.some(m=>m.prices.summaries.some(g=>g.n<3)))out.push('3건 미만인 구간은 표본이 적어 개별 계약 조건의 영향이 큽니다.');

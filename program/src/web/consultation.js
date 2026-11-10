@@ -7,7 +7,7 @@ window.ConsultationUI=(()=>{
   let context,report=null,baseline='',officeDraft={},logoDataUrl='',logoRead=0,logoPending=false,saving=false,preview='detail';
 
   function customerFields(host,prefix){
-    host.innerHTML=`<div class="field-row"><div><label for="${prefix}-purpose">상담 목적</label><select id="${prefix}-purpose"><option value="">아직 정하지 않음</option><option value="live">실거주 매수</option><option value="invest">투자 검토</option><option value="rent">전·월세 입주</option></select></div><div><label for="${prefix}-moveIn">입주 시기</label><input id="${prefix}-moveIn" maxlength="40" placeholder="예: 내년 3월 / 협의 가능"></div></div><div class="field-row"><div><label for="${prefix}-budgetType">예산 기준</label><select id="${prefix}-budgetType"><option value="trade">매매가격</option><option value="jeonse">전세보증금</option><option value="monthly">월세보증금</option></select></div><div><label id="${prefix}-budget-label" for="${prefix}-budget">예산 상한 (만원)</label><input id="${prefix}-budget" type="number" inputmode="decimal" min="0.01" max="1000000000" step="0.01" placeholder="예: 70000" aria-describedby="${prefix}-budget-hint"></div></div><p id="${prefix}-budget-hint" class="field-hint">매매가격 기준입니다. 모르면 비워 두세요.</p><fieldset class="customer-priorities"><legend>중요한 조건 <span class="optional">최대 2개</span></legend><div class="priority-options"></div></fieldset>`;
+    host.innerHTML=`<div class="field-row"><div><label for="${prefix}-purpose">상담 목적</label><select id="${prefix}-purpose"><option value="">아직 정하지 않음</option><option value="live">실거주 매수</option><option value="invest">투자 검토</option><option value="rent">전·월세 입주</option></select></div><div><label for="${prefix}-moveIn">입주 시기</label><input id="${prefix}-moveIn" maxlength="40" placeholder="예: 내년 3월 / 협의 가능"></div></div><div class="field-row"><div><label for="${prefix}-budgetType">예산 기준</label><select id="${prefix}-budgetType"><option value="trade">매매가격</option><option value="jeonse">전세보증금</option><option value="monthly">월세보증금</option></select></div><div><label id="${prefix}-budget-label" for="${prefix}-budget">예산 상한 (만원)</label><input id="${prefix}-budget" type="number" inputmode="decimal" min="0.01" max="1000000000" step="0.01" placeholder="예: 70000" aria-describedby="${prefix}-budget-echo ${prefix}-budget-hint"><p id="${prefix}-budget-echo" class="money-echo" data-money-echo="${prefix}-budget"></p></div></div><p id="${prefix}-budget-hint" class="field-hint">매매가격 기준입니다. 모르면 비워 두세요.</p><fieldset class="customer-priorities"><legend>중요한 조건 <span class="optional">최대 2개</span></legend><div class="priority-options"></div></fieldset>`;
     const choices=host.querySelector('.priority-options');
     priorities.forEach((name,index)=>{
       const label=document.createElement('label'),box=document.createElement('input');
@@ -33,7 +33,7 @@ window.ConsultationUI=(()=>{
 
   function fillCustomer(value={},prefix='consultation'){
     get(`${prefix}-purpose`).value=value.purpose||'';
-    get(`${prefix}-budget`).value=value.budgetManwon??'';
+    get(`${prefix}-budget`).value=value.budgetManwon??'';if(typeof syncMoneyEcho==='function')syncMoneyEcho(`${prefix}-budget`);
     get(`${prefix}-budgetType`).value=value.budgetType||'trade';
     get(`${prefix}-moveIn`).value=value.moveIn||'';
     priorities.forEach((name,i)=>{get(`${prefix}-priority-${i}`).checked=(value.priorities||[]).includes(name);});

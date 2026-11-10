@@ -24,7 +24,8 @@ function eligible(p,key){
  if(key==='general')return /(?:^| > )(?:상급종합병원|종합병원|대학병원)$/.test(label)&&!/동물|요양|병원부속시설/.test(label);
  if(['pediatrics','orthopedics','dental'].includes(key))return /의료|병원|의원/.test(label)&&!/(동물|한방|한의원)/.test(label)&&({pediatrics:/소아(?:청소년)?과/,orthopedics:/정형외과/,dental:/치과/}[key]).test(label);
  if(!/학원/.test(label)||/독서실|고시원|운전|컴퓨터|성인|평생|출판|서점/.test(label))return false;
- const match={entrance:/입시학원|보습학원/,korean:/국어/,english:/영어/,math:/수학/}[key];
+ // '외국어·중국어·한국어'에 들어 있는 '국어'는 국어 과목이 아니다(카카오의 영어학원 분류는 대부분 '외국어학원' 아래에 있다).
+ const match={entrance:/입시학원|보습학원/,korean:/(?<![외중한])국어/,english:/영어/,math:/수학/}[key];
  if(!match)return false;
  if(key==='entrance')return /(?:^| > )(?:입시학원|보습학원)$/.test(label);
  if(key==='english'&&/중국어|일본어|불어|독일어|성인회화/.test(label+' '+name)&&!/영어/.test(label+' '+name))return false;

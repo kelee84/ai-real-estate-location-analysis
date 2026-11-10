@@ -12,7 +12,7 @@ function candidates(d){
 }
 function officialCandidates(raw,error){
  const region=error.region;if(!region?.code||!region.province?.name||!region.name)throw error;
- const list=(error.properties||[]).filter(p=>/^\d{5,20}$/.test(String(p.aprpnHsmpCode))&&p.aprpnHsmpNm&&p.townName).map(p=>{
+ const list=(error.properties||[]).filter(p=>/^\d{1,20}$/.test(String(p.aprpnHsmpCode))&&p.aprpnHsmpNm&&p.townName).map(p=>{
   const address=[region.province.name,region.name,p.townName,p.mnnm].filter(Boolean).join(' '),coords={lat:Number(p.la),lng:Number(p.lo)};
   return {id:'rtms-'+p.aprpnHsmpCode,officialCode:String(p.aprpnHsmpCode),name:clean(p.aprpnHsmpNm,100),town:clean(p.townName,100),address,road:p.roadNm?[region.province.name,region.name,p.roadNm].join(' '):'',...(point(coords)?coords:{})};
  });
@@ -21,8 +21,9 @@ function officialCandidates(raw,error){
 }
 function officialChoice(saved,choice){
  if(!choice.officialCode||!saved.region?.province?.name||!saved.region?.name||!choice.town)throw Error('선택한 공식 단지의 지역·식별값을 확인하지 못했습니다. 다시 검색해 주세요.');
- return {target:[saved.region.province.name,saved.region.name,choice.town,choice.name].join(' '),building:choice.name,region:saved.region,expected:{...choice}};
+ return {target:choiceTarget(saved.region,choice.town,choice.name),building:choice.name,region:saved.region,expected:{...choice}};
 }
+function choiceTarget(region,town,name){return [region.province.name,region.name===region.province.name?'':region.name,town,name].filter(Boolean).join(' ');}
 function completeLotAddress(address){
  const text=String(address||'').normalize('NFKC').trim();if(!hasRegion(text))return null;
  // Only an explicit legal neighborhood plus lot may replace address geocoding.
@@ -32,16 +33,18 @@ function completeLotAddress(address){
  const prefix=text.slice(0,match.index).trim().split(/\s+/);if(prefix.length<2||!prefix.slice(1).every(s=>/^[가-힣0-9]+(?:시|군|구)$/.test(s)))return null;
  return {address:text,town:match[1],provinceText:prefix[0],regionText:prefix.slice(1).join(' ')};
 }
+async function savedNaver(raw,{naverStore,forceRefresh=false,signal}={}){
+ const input=normalizeInput(raw);if(input.asset!=='apartment'||!naverStore||forceRefresh||raw.forceRefresh||input.asOf!==todayKst())return null;
+ let saved=[];try{saved=await naverStore.list(input.asOf);}catch(error){if(signal?.aborted)throw error;}
+ require('./search-errors.cjs').cancelled(signal);
+ const list=require('./naver-land.cjs').candidates(input,saved);
+ return list.length?{input,candidates:list,checkedAt:new Date().toISOString(),sourceName:'네이버 부동산 저장 단지정보',reason:'오늘 조회한 단지정보를 재사용했습니다. 단지를 선택하면 공식 실거래가 단지 목록에서 주소·면적을 다시 대조합니다.'}:null;
+}
 async function search(bridge,raw,{signal,client,naverStore,forceRefresh=false}={}){
  const input=normalizeInput(raw);if(input.asset!=='apartment')throw Error('주소 없이 단지명을 검색하는 기능은 아파트를 지원합니다. 다른 매물은 시·군·구와 주소를 입력해 주세요.');
  if(input.target.trim().length<2)throw Error('아파트명을 두 글자 이상 입력해 주세요.');
  if(signal?.aborted)throw Error('단지 검색을 중지했습니다.');
- if(naverStore&&!forceRefresh&&!raw.forceRefresh&&input.asOf===todayKst()){
-  let saved=[];try{saved=await naverStore.list(input.asOf);}catch(error){if(signal?.aborted)throw error;}
-  if(signal?.aborted)throw Error('단지 검색을 중지했습니다.');
-  const list=require('./naver-land.cjs').candidates(input,saved);
-  if(list.length)return {input,candidates:list,checkedAt:new Date().toISOString(),sourceName:'네이버 부동산 저장 단지정보',reason:'오늘 조회한 단지정보를 재사용했습니다. 단지를 선택하면 공식 실거래가 단지 목록에서 주소·면적을 다시 대조합니다.'};
- }
+ const saved=await savedNaver(raw,{naverStore,forceRefresh,signal});if(saved)return saved;
  const session=await bridge.evidenceSession({signal}),t=await bridge.evidenceTool(session,'get_complex_info_by_query',{complex_query:input.target},{signal}),d=data(t),list=candidates(d);
  if(!list.length&&d?.error==='NOT_FOUND'&&client){
   const identity=require('./property-identity.cjs'),query=identity.requestedName(input).normalize('NFKC').trim(),withoutSuffix=query.replace(/\s*(?:아파트|apt)\s*$/i,'').trim();
@@ -70,9 +73,10 @@ async function resolveChoice(bridge,client,choice,{signal}={}){
  if(choice.naverComplexNo){
   if(!/^\d{1,20}$/.test(String(choice.naverComplexNo))||choice.id!=='naver-'+choice.naverComplexNo||choice.officialCode||!choice.name||!choice.address)throw Error('선택한 네이버 단지의 식별값·주소를 확인하지 못했습니다. 다시 검색해 주세요.');
   if(signal?.aborted)throw Error('단지 검색을 중지했습니다.');
-  const region=await client.resolve(choice.address,signal),town=choice.address.match(/(?:^|\s)([가-힣0-9]+(?:동|읍|면|리))(?=\s|$)/)?.[1];
-  if(!/^\d{5}$/.test(String(region?.code||''))||!region.province?.name||!region.name||!town)throw Error('선택한 단지의 공식 주소·지역을 대조하지 못했습니다. 다른 후보를 선택하거나 주소를 추가해 주세요.');
-  return {target:[region.province.name,region.name,town,choice.name].join(' '),building:choice.name,region,expected:{...choice}};
+  const region=await require('./search-errors.cjs').retryRead(()=>client.resolve(choice.address,signal),signal),parts=require('./property-identity.cjs').addressParts(choice.address),town=parts.town;
+  const expectedRegions=parts.regions.filter(s=>/(?:시|군|구)$/.test(s));
+  if(!/^\d{5}$/.test(String(region?.code||''))||!region.province?.name||!region.name||!town||provinceKey(region.province.name)!==provinceKey(parts.province)||expectedRegions.length&&norm(region.name)!==norm(expectedRegions.join(' ')))throw Error('선택한 단지의 공식 주소·지역을 대조하지 못했습니다. 다른 후보를 선택하거나 주소를 추가해 주세요.');
+  return {target:choiceTarget(region,town,choice.name),building:choice.name,region,expected:{...choice}};
  }
  const lotAddress=completeLotAddress(choice.address);
  if(lotAddress&&typeof client.resolve==='function'){
@@ -90,4 +94,4 @@ async function resolveChoice(bridge,client,choice,{signal}={}){
  const towns=JSON.parse((await client.request('/cmm/emdList.do',{code:region.code},signal)).toString()).emdList,town=towns?.find(p=>String(p.code)===d.full_code);if(!town)throw Error('선택 단지의 법정동을 공식 목록에서 찾지 못했습니다.');
  return {target:[province.name,region.name,town.codeNm,choice.name].join(' '),building:choice.name,region:{...region,province},expected:{...choice,lat:choice.lat??d.lat,lng:choice.lng??d.lng}};
 }
-module.exports={data,point,hasRegion,candidates,search,resolveChoice,officialCandidates,officialChoice,completeLotAddress};
+module.exports={data,point,hasRegion,candidates,search,resolveChoice,officialCandidates,officialChoice,completeLotAddress,savedNaver};

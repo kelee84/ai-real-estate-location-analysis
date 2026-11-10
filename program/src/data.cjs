@@ -15,7 +15,7 @@ class RtmsClient {
   async request(route,form,signal,limit=20*1024*1024) {
     const r=await fetch(BASE+route,{method:form?'POST':'GET',headers:{'User-Agent':'RealEstateHelper/0.1','Referer':BASE+'/pt/xls/xls.do',...(form?{'Content-Type':'application/x-www-form-urlencoded'}:{}),...(this.cookies.size?{Cookie:[...this.cookies].map(([k,v])=>`${k}=${v}`).join('; ')}:{})},body:form?new URLSearchParams(form):undefined,signal:AbortSignal.any([signal||new AbortController().signal,AbortSignal.timeout(45000)])});
     for(const c of r.headers.getSetCookie()){const [kv]=c.split(';');const at=kv.indexOf('=');this.cookies.set(kv.slice(0,at),kv.slice(at+1));}
-    if(!r.ok)throw new Error(`국토교통부 자료 연결 오류 (${r.status})`);
+    if(!r.ok)throw Object.assign(new Error(`국토교통부 자료 연결 오류 (${r.status})`),{status:r.status});
     if(Number(r.headers.get('content-length'))>limit)throw new Error('조회 자료가 너무 큽니다. 지역 또는 기간을 좁혀 주세요.');
     const reader=r.body.getReader(),chunks=[];let length=0;
     try{while(true){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>limit)throw new Error('자료 크기 제한을 초과했습니다.');chunks.push(Buffer.from(value));}}catch(e){await reader.cancel().catch(()=>{});throw e;}
@@ -36,6 +36,7 @@ class RtmsClient {
   }
   async resolve(target,signal){
     const provinces=await this.listProvinces(signal),aliases={'서울':'서울특별시','부산':'부산광역시','대구':'대구광역시','인천':'인천광역시','광주':'광주광역시','대전':'대전광역시','울산':'울산광역시','세종':'세종특별자치시','경기':'경기도','강원':'강원특별자치도','충북':'충청북도','충남':'충청남도','전북':'전북특별자치도','전남':'전라남도','경북':'경상북도','경남':'경상남도','제주':'제주특별자치도'};
+    Object.assign(aliases,{강원도:'강원특별자치도',전라북도:'전북특별자치도',제주도:'제주특별자치도'});
     for(const [short,full]of Object.entries({...aliases}))if(/시$/.test(full))aliases[short+'시']=full;
     const first=target.split(/\s/)[0],province=provinces.find(p=>p.name===first||p.name===aliases[first]);
     if(!province)throw Object.assign(new Error('시·도를 포함해 입력해 주세요. 예: 서울 송파구 잠실동 리센츠'),{code:'REGION_REQUIRED'});

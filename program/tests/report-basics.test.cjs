@@ -45,6 +45,18 @@ test('신규 수집은 주차가 있어도 총세대수가 빠졌으면 네이�
  const m=member('A',today),service=new AnalysisService({bridge:new EventEmitter(),onEvent:()=>{}}),p={buildingResolution:m.prices.buildingResolution,naverLand:record(m,{basic:{parkingSpaces:1200}})};let calls=0;
  service.findNaverComplex=async()=>{calls++;return record(m);};await service.reuseNaverLand(m.input,p);assert.equal(calls,1);assert.equal(p.naverLand.basic.units,1000);assert.equal(p.naverLand.basic.parkingSpaces,1200);
 });
+
+test('saved reports with a terminal phase alias recover Naver household and parking without changing original bytes',async t=>{
+ const mokdong=require('./fixtures/naver-mokdong.cjs'),m=member(),r=mokdong.record();
+ m.input.building=mokdong.identity.building;m.prices.buildingResolution={...mokdong.identity};
+ m.prices.naverLand={...r,checkedAt:past,basic:{units:1140}};
+ const f=await fixture(t,m),raw=await fs.readFile(f.file);let searches=0;
+ f.service.findNaverComplex=async()=>{searches++;return r;};
+ const out=await f.service.presentationReport(m.id),v=values(out);
+ assert.equal(searches,1);assert.equal(v.units,'1,140세대');assert.equal(v.parking,'총 1,376대 · 세대당 1.21대');
+ assert.equal(out.input.asOf,past);assert.deepEqual(out.prices.naverLand,m.prices.naverLand);assert.deepEqual(await fs.readFile(f.file),raw);
+ assert.equal(out.basicSnapshot.record.sourceUrl,r.sourceUrl);
+});
 test('다른 지번·차수·100m 초과 좌표·미래·오래된 자료는 sidecar나 주차·세대 표에 들어가지 않음',async t=>{
  for(const change of [{addressJibun:'인천광역시 연수구 송도동 999'},{name:'A검증2차아파트'},{lat:37.42},{checkedAt:new Date(Date.now()+3600000).toISOString()},{checkedAt:past}]){
   const m=member(),f=await fixture(t,m);f.service.findNaverComplex=async()=>record(m,change);const out=await f.service.presentationReport(m.id);assert.equal(values(out).units,'미확인',JSON.stringify(change));assert.equal(values(out).parking,'미확인');assert.equal(out.basicSnapshot,undefined);await assert.rejects(fs.stat(f.sidecar),{code:'ENOENT'});

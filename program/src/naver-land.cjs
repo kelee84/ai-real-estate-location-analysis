@@ -72,10 +72,13 @@ function targetRegion(input){
 function candidates(input,records){
  if(input?.asset&&input.asset!=='apartment'||input?.asOf&&input.asOf!==todayKst())return [];
  let name;try{name=identityRules.requestedName(input||{});}catch{return [];}
- if(!name)return [];const requested=targetRegion(input),found=new Map();
+ const address=identityRules.addressParts(input.target),requested=targetRegion(input),found=new Map();
+ if(!name&&!address.lot&&!address.road)return [];
  for(const value of Array.isArray(records)?records:[])try{
   const record=normalize(value),facts=addressFacts(record.addressJibun);
-  if(stamp(record.checkedAt)?.day!==todayKst()||identityRules.identityConflict(name,record.name)||!identityRules.compatibleName(name,record.name))continue;
+  if(stamp(record.checkedAt)?.day!==todayKst()||name&&(identityRules.identityConflict(name,record.name)||!identityRules.compatibleName(name,record.name)))continue;
+  const savedAddress=identityRules.addressParts(record.addressJibun);
+  if(address.lot&&address.lot!==savedAddress.lot||address.road&&address.road!==identityRules.roadKey(record.addressRoad))continue;
   if(requested.province&&requested.province!==facts.province||requested.regions.some(r=>![...facts.regions,facts.town].includes(r)))continue;
   const previous=found.get(record.complexNo);if(!previous||stamp(previous.checkedAt).time<stamp(record.checkedAt).time)found.set(record.complexNo,record);
  }catch{}
