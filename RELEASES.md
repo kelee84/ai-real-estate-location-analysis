@@ -5,7 +5,7 @@
 Windows x64 설치 파일을 최신 0.6.32 소스에서 새로 빌드했습니다. 기존 단지 식별·타입 검색·네이버 기본정보 보완과 입력 흐름·최근 분석 목록·보관함·평가 개선을 포함합니다.
 
 - 설치 파일: `RealEstateHelper-Setup-0.6.32-x64.exe`
-- 간단 설명서: `처음사용하기.pdf` (A4 1쪽)
+- 간단 설명서: `Quickstart-ko.pdf` (A4 1쪽, 로컬 파일명 `처음사용하기.pdf`)
 - 확인값: `SHA256SUMS.txt`
 - [GitHub 배포 페이지](https://github.com/kelee84/ai-real-estate-location-analysis/releases/tag/v0.6.32)
 
