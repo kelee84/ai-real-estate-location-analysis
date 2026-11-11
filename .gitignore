@@ -13,6 +13,7 @@ program/.build/
 
 # Local credentials and environment files
 /.private/
+/.claude/
 /.local/
 *.local.json
 *.local.toml

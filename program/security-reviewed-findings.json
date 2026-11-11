@@ -272,6 +272,24 @@
       "rule": "document-author",
       "sha256": "1ebed2737d0a613dcfe3ce420a8788ce8d775199711b213701ab6017fd8fe077",
       "reason": "Individually reviewed synthetic test fixture; not an operational credential or customer record."
+    },
+    {
+      "file": ".claude/skills/presentations/artifact_tool_docs/api/references/comments.md",
+      "rule": "email",
+      "sha256": "18717f7f1f60f92207bd02972c16aec92f52b31c2a8442444df988d8e8503c5e",
+      "reason": "Historical Claude copy of the same reviewed upstream documentation example; not an owner or customer contact."
+    },
+    {
+      "file": ".claude/skills/presentations/artifact_tool_docs/api/references/comments.md",
+      "rule": "email",
+      "sha256": "bc15ce5d4fa97606bf6987d111db7d744e04fda69d93ca4653ec189387e02fb3",
+      "reason": "Historical Claude copy of the same reviewed upstream documentation example; not an owner or customer contact."
+    },
+    {
+      "file": ".claude/skills/presentations/artifact_tool_docs/api/references/cookbook/imported-deck.md",
+      "rule": "email",
+      "sha256": "a6d4603a83cefdac95ee5ec70abaaed6410d789143fa6ba3f5fdaab25ec75668",
+      "reason": "Historical Claude copy of the same reviewed upstream documentation example; not an owner or customer contact."
     }
   ]
 }
